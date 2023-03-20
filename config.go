@@ -4,15 +4,17 @@ import (
 	"errors"
 	"os"
 
+	"go.uber.org/zap/zapcore"
 	"gopkg.in/yaml.v3"
 )
 
 // Config defines the structure of the configuration file.
 type Config struct {
-	GitCommit    string `yaml:"git_commit"`
-	GitTag       string `yaml:"git_tag"`
-	IsProduction bool   `yaml:"is_production"`
-	LogFileName  string `yaml:"log_file_name"`
+	GitCommit    string        `yaml:"git_commit"`
+	GitTag       string        `yaml:"git_tag"`
+	IsProduction bool          `yaml:"is_production"`
+	LogLevel     zapcore.Level `yaml:"log_level"`
+	LogFileName  string        `yaml:"log_file_name"`
 
 	Server struct {
 		Host            string `yaml:"host"`

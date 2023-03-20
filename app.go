@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 	"os/signal"
@@ -26,6 +27,7 @@ type App struct {
 	config      *Config
 	server      *http.Server
 	redisClient *redis.Client
+	cleanups    []func()
 }
 
 // NewApp provides an instance
@@ -48,11 +50,12 @@ func NewApp() (AppProvider, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to create logging file: %s", err)
 	}
-
-	logger, err := SetupLogging(config, logFile)
-	if err != nil {
-		return app, fmt.Errorf("failed to initialize logging module: %s", err)
+	closer := func() {
+		if cerr := logFile.Close(); cerr != nil {
+			log.Println("error during closing of log file: ", cerr)
+		}
 	}
+	logger, flusher := SetupLogging(config, logFile)
 
 	// Setup the connection to redis server.
 	redisClient, err := GetRedisClient(config)
@@ -83,12 +86,16 @@ func NewApp() (AppProvider, error) {
 		config:      config,
 		server:      srv,
 		redisClient: redisClient,
+		cleanups: []func(){
+			flusher,
+			closer,
+		},
 	}, nil
 }
 
 // Run starts the api web server and a goroutine which is responsible to stop it.
 func (app *App) Run() error {
-	defer app.logger.Sync()
+	defer app.Clean()
 	nCtx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
 
@@ -104,6 +111,13 @@ func (app *App) Run() error {
 		zap.Error(err),
 	)
 	return err
+}
+
+// Clean calls all registered cleanups functions.
+func (app *App) Clean() {
+	for _, f := range app.cleanups {
+		f()
+	}
 }
 
 // Serve starts the api web server. It returned error
