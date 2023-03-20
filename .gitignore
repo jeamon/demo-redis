@@ -1,0 +1,25 @@
+# Binaries folder
+bin/
+
+# Generate cpu profile file
+cpuprofile
+
+# Binaries for windows-based OS
+*.exe
+*.exe~
+
+# Binary for Linux-based OS
+demo-rest-api
+demo-rest-api-server
+
+# Test binary, build with `go test -c`
+*.test
+
+# Output of the go coverage tool
+*.out
+
+# vscode IDE specific
+.vscode
+
+# log files
+*.log

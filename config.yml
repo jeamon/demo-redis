@@ -1,0 +1,30 @@
+# False for developement mode and
+# logs is printed on console and file
+is_production: false
+log_level: "info"
+log_file_name: "logs.log"
+
+# Could be manually or auto detected with build flags.
+git_commit: "n/a"
+git_tag: "n/a"
+
+# Backend api server settings
+server:
+  host: "127.0.0.1"
+  port: "8080"
+  request_timeout: 60
+  shutdown_timeout: 90
+  certs_file: "./assets/certs/server.crt"
+  key_file: "./assets/certs/server.key"
+
+# Redis datastore settings
+redis:
+  host: "192.168.253.128"
+  port: "6379"
+  dial_timeout: 30
+  read_timeout: 30
+  pool_size: 10
+  pool_timeout: 30
+  username: ""
+  password: "secret"
+  db_index: 1
