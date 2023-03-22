@@ -5,8 +5,9 @@ import (
 )
 
 var (
-	gitCommit string
-	gitTag    string
+	GitCommit string
+	GitTag    string
+	BuildTime string
 )
 
 func main() {

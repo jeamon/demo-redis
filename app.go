@@ -40,10 +40,11 @@ func NewApp() (AppProvider, error) {
 	if err != nil {
 		return app, fmt.Errorf("failed to load configurations: %s", err)
 	}
-	err = InitConfig(config, gitCommit, gitTag)
+	err = InitConfig(config, GitCommit, GitTag, BuildTime)
 	if err != nil {
 		return app, fmt.Errorf("failed to initialize configurations: %s", err)
 	}
+	fmt.Println(GitCommit, GitTag, BuildTime)
 
 	// Setup the logging module.
 	logFile, err := os.OpenFile(config.LogFileName, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0o644)

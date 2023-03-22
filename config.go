@@ -12,6 +12,7 @@ import (
 type Config struct {
 	GitCommit    string        `yaml:"git_commit"`
 	GitTag       string        `yaml:"git_tag"`
+	BuildTime    string        `yaml:"build_time"`
 	IsProduction bool          `yaml:"is_production"`
 	LogLevel     zapcore.Level `yaml:"log_level"`
 	LogFileName  string        `yaml:"log_file_name"`
@@ -58,13 +59,17 @@ func LoadConfig(configFile string) (*Config, error) {
 
 // InitConfig setup defaults values for non provided parameters
 // and configures build tags values to be used if provided.
-func InitConfig(config *Config, gitCommit, gitTag string) error {
+func InitConfig(config *Config, gitCommit, gitTag, buildTime string) error {
 	if len(gitCommit) != 0 {
 		config.GitCommit = gitCommit
 	}
 
 	if len(gitTag) != 0 {
 		config.GitTag = gitTag
+	}
+
+	if len(buildTime) != 0 {
+		config.BuildTime = buildTime
 	}
 
 	if len(config.Server.Host) == 0 || len(config.Server.Port) == 0 {
