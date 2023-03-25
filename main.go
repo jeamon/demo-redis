@@ -17,6 +17,6 @@ func main() {
 	}
 	err = app.Run()
 	if err != nil {
-		log.Println("application exited. check logs for more details.", err)
+		log.Fatal("application exited. check logs for more details.", err)
 	}
 }
