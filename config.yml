@@ -1,31 +1,38 @@
+# This is the default configuration settings which will be loaded in the first place.
+# If you rename or want to use another file, update also the name in docker-compose file.
+# All settings defined here will be overrided by the content of `app.env` file. You can 
+# update the content of `app.env` per your need (dev or staging or prod). If you rename
+# this file, you must update the naming used in the `docker-compose.yml` file as well.
+
 # False for developement mode and
 # logs is printed on console and file
 is_production: false
 log_level: "info"
-log_file_name: "logs.log"
+log_file_name: "./logs/logs.log"
 
-# Could be manually or auto detected with build flags.
+# Could be manually set or envs variables
+# or auto detected with build flags.
 git_commit: "n/a"
 git_tag: "n/a"
 build_time: "n/a"
 
-# Backend api server settings
+# Api server settings
 server:
-  host: "127.0.0.1"
+  host: "0.0.0.0"
   port: "8080"
   request_timeout: 60
   shutdown_timeout: 90
-  certs_file: "./assets/certs/server.crt"
-  key_file: "./assets/certs/server.key"
+  certs_file: "./server.crt"
+  key_file: "./server.key"
 
-# Redis datastore settings
+# Redis settings
 redis:
-  host: "192.168.253.128"
+  host: "db.demo.redis"
   port: "6379"
   dial_timeout: 30
   read_timeout: 30
   pool_size: 10
   pool_timeout: 30
   username: ""
-  password: "secret"
+  password: "<secret>"
   db_index: 1
