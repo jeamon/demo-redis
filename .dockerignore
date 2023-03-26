@@ -1,6 +1,12 @@
 # Binaries folder
 bin/
 
+# All markdown
+*.md
+
+Dockerfile
+docker-compose.yml
+
 # Generate cpu profile file
 cpuprofile
 
