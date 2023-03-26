@@ -1,7 +1,7 @@
 package main
 
 import (
-	"log"
+	"fmt"
 	"os"
 
 	"go.uber.org/zap"
@@ -46,7 +46,7 @@ func SetupLogging(config *Config, logFile *os.File) (*zap.Logger, func()) {
 
 	flusher := func() {
 		if err := logger.Sync(); err != nil {
-			log.Println("error during flushing any buffered log entries:", err)
+			fmt.Println("error during flushing any buffered log entries:", err)
 		}
 	}
 

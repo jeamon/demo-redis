@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"fmt"
-	"log"
 	"net/http"
 	"os"
 	"os/signal"
@@ -53,7 +52,7 @@ func NewApp() (AppProvider, error) {
 	}
 	closer := func() {
 		if cerr := logFile.Close(); cerr != nil {
-			log.Println("error during closing of log file: ", cerr)
+			fmt.Println("error during closing of log file: ", cerr)
 		}
 	}
 	logger, flusher := SetupLogging(config, logFile)
