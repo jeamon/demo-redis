@@ -1,0 +1,48 @@
+version: '3.8'
+
+services:
+  app.demo.redis:
+    image: app.demo.redis:latest
+    container_name: app.demo.redis
+    build:
+      dockerfile: Dockerfile
+      context: .
+    ports:
+      - 8080:8080
+    networks:
+      - backend.demo.redis
+    restart: unless-stopped
+    volumes:
+      # create a volume and bind logs folder
+      - app.demo.redis.data:/logs
+      # mount config file in the container
+      - ./config.yml:/config.yml:ro
+    env_file:
+      - ./app.env
+    links:
+      - db.demo.redis:db.demo.redis
+    depends_on:
+      - db.demo.redis
+ 
+  db.demo.redis:
+    image: redis:7.0.10-alpine
+    container_name: db.demo.redis
+    restart: unless-stopped
+    ports:
+      - 6379:6379
+    command: redis-server /usr/local/etc/redis/redis.conf
+    networks:
+      - backend.demo.redis
+    volumes:
+    - ./redis.conf:/usr/local/etc/redis/redis.conf:ro
+    - db.demo.redis.data:/data
+
+networks:
+  backend.demo.redis:
+    driver: bridge
+
+volumes:
+  app.demo.redis.data:
+    driver: local
+  db.demo.redis.data:
+    driver: local
