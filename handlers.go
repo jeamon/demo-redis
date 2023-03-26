@@ -37,6 +37,8 @@ func (api *APIHandler) SetupRoutes(router *httprouter.Router) *httprouter.Router
 	router.RedirectTrailingSlash = true
 	router.GET("/", api.middleware(api.Index))
 	router.GET("/status", api.middleware(api.Index))
+	// router.GET("/internal/stats", api.middleware(api.GetStats))
+	router.GET("/internal/configs", api.middleware(api.GetConfigs))
 	router.POST("/v1/books", api.middleware(api.CreateBook))
 	router.GET("/v1/books", api.middleware(api.GetAllBooks))
 	router.GET("/v1/books/:id", api.middleware(api.GetOneBook))
@@ -63,6 +65,19 @@ func (api *APIHandler) Index(w http.ResponseWriter, r *http.Request, _ httproute
 		},
 	); err != nil {
 		api.logger.Error("failed to send index response", zap.String("requestid", requestID), zap.Error(err))
+	}
+}
+
+// GetConfigs serves current in-use configurations/settings.
+func (api *APIHandler) GetConfigs(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	requestID := GetRequestIDFromContext(r.Context())
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	if err := json.NewEncoder(w).Encode(
+		map[string]interface{}{
+			"configs": api.config,
+		},
+	); err != nil {
+		api.logger.Error("failed to send settings response", zap.String("requestid", requestID), zap.Error(err))
 	}
 }
 
