@@ -18,7 +18,7 @@ services:
       # mount config file in the container
       - ./config.yml:/config.yml:ro
     env_file:
-      - ./app.env
+      - ./config.env
     links:
       - db.demo.redis:db.demo.redis
     depends_on:
