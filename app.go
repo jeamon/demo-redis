@@ -35,10 +35,16 @@ func NewApp() (AppProvider, error) {
 	var app *App
 
 	// Setup the configuration module.
-	config, err := LoadConfig("./config.yml")
+	config, err := LoadConfigFile("./config.yml")
 	if err != nil {
-		return app, fmt.Errorf("failed to load configurations: %s", err)
+		return app, fmt.Errorf("failed to load configurations from file: %s", err)
 	}
+
+	err = LoadConfigEnvs("", config)
+	if err != nil {
+		return app, fmt.Errorf("failed to load configurations from environment: %s", err)
+	}
+
 	err = InitConfig(config, GitCommit, GitTag, BuildTime)
 	if err != nil {
 		return app, fmt.Errorf("failed to initialize configurations: %s", err)

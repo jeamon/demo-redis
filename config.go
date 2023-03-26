@@ -4,6 +4,7 @@ import (
 	"errors"
 	"os"
 
+	"github.com/kelseyhightower/envconfig"
 	"go.uber.org/zap/zapcore"
 	"gopkg.in/yaml.v3"
 )
@@ -18,8 +19,8 @@ type Config struct {
 	LogFileName  string        `yaml:"log_file_name"`
 
 	Server struct {
-		Host            string `yaml:"host"`
-		Port            string `yaml:"port"`
+		Host            string `yaml:"host", envconfig:"SERVER_HOST"`
+		Port            string `yaml:"port", envconfig:"SERVER_PORT"`
 		CertsFile       string `yaml:"certs_file"`
 		KeyFile         string `yaml:"key_file"`
 		RequestTimeout  int    `yaml:"request_timeout"`
@@ -27,21 +28,21 @@ type Config struct {
 	} `yaml:"server"`
 
 	Redis struct {
-		Host          string `yaml:"host"`
-		Port          string `yaml:"port"`
+		Host          string `yaml:"host", envconfig:"REDIS_HOST"`
+		Port          string `yaml:"port", envconfig:"REDIS_PORT"`
 		DialTimeout   int    `yaml:"dial_timeout"`
 		ReadTimeout   int    `yaml:"read_timeout"`
 		WriteTimeout  int    `yaml:"write_timeout"`
 		PoolSize      int    `yaml:"pool_size"`
 		PoolTimeout   int    `yaml:"pool_timeout"`
 		Username      string `yaml:"username"`
-		Password      string `yaml:"password"`
-		DatabaseIndex int    `yaml:"db_index"`
+		Password      string `yaml:"password", envconfig:"REDIS_PASSWORD"`
+		DatabaseIndex int    `yaml:"db_index", envconfig:"REDIS_DB_INDEX"`
 	} `yaml:"redis"`
 }
 
-// LoadConfig provides an instance of config structure for the all application.
-func LoadConfig(configFile string) (*Config, error) {
+// LoadConfigFile provides an instance of config structure for the all application.
+func LoadConfigFile(configFile string) (*Config, error) {
 	file, err := os.Open(configFile)
 	if err != nil {
 		return nil, err
@@ -55,6 +56,11 @@ func LoadConfig(configFile string) (*Config, error) {
 		return nil, err
 	}
 	return cfg, nil
+}
+
+// LoadConfigEnv reads the environments variables and provides an instance of the App config.
+func LoadConfigEnvs(prefix string, config *Config) error {
+	return envconfig.Process(prefix, config)
 }
 
 // InitConfig setup defaults values for non provided parameters
