@@ -24,11 +24,14 @@ type APIError struct {
 	Data      interface{} `json:"data"`
 }
 
-// APIError is the data model sent when a request succeed.
+// APIResponse is the data model sent when a request succeed.
+// We use the omitempty flag on the `total` field. This helps
+// set the value for `GetAllBook` calls only.
 type APIResponse struct {
 	RequestID string      `json:"requestid"`
 	Status    int         `json:"status"`
 	Message   string      `json:"message"`
+	Total     *int        `json:"total,omitempty"`
 	Data      interface{} `json:"data"`
 }
 
@@ -41,11 +44,12 @@ func NewAPIError(requestid string, status int, message string, data interface{})
 	}
 }
 
-func GenericResponse(requestid string, status int, message string, data interface{}) *APIResponse {
+func GenericResponse(requestid string, status int, message string, total *int, data interface{}) *APIResponse {
 	return &APIResponse{
 		RequestID: requestid,
 		Status:    status,
 		Message:   message,
+		Total:     total,
 		Data:      data,
 	}
 }

@@ -103,7 +103,7 @@ func (api *APIHandler) CreateBook(w http.ResponseWriter, r *http.Request, ps htt
 		return
 	}
 	api.logger.Info("success to create book", zap.String("requestid", requestID), zap.String("requestid", requestID))
-	resp := GenericResponse(requestID, http.StatusCreated, "Book created successfully.", book)
+	resp := GenericResponse(requestID, http.StatusCreated, "Book created successfully.", nil, book)
 	if err = WriteResponse(w, resp); err != nil {
 		api.logger.Error("failed to send response", zap.String("requestid", requestID), zap.Error(err))
 	}
@@ -121,7 +121,8 @@ func (api *APIHandler) GetAllBooks(w http.ResponseWriter, r *http.Request, _ htt
 		return
 	}
 	api.logger.Info("success to get all books", zap.String("requestid", requestID))
-	resp := GenericResponse(requestID, http.StatusOK, "All books fetched successfully.", books)
+	total := len(books)
+	resp := GenericResponse(requestID, http.StatusOK, "All books fetched successfully.", &total, books)
 	if err = WriteResponse(w, resp); err != nil {
 		api.logger.Error("failed to send response", zap.Error(err))
 	}
@@ -148,7 +149,7 @@ func (api *APIHandler) GetOneBook(w http.ResponseWriter, r *http.Request, ps htt
 		return
 	}
 	api.logger.Info("success to get book", zap.String("id", id), zap.String("requestid", requestID))
-	resp := GenericResponse(requestID, http.StatusOK, "Book fetched successfully.", book)
+	resp := GenericResponse(requestID, http.StatusOK, "Book fetched successfully.", nil, book)
 	if err = WriteResponse(w, resp); err != nil {
 		api.logger.Error("failed to send response", zap.String("requestid", requestID), zap.Error(err))
 	}
@@ -193,7 +194,7 @@ func (api *APIHandler) DeleteOneBook(w http.ResponseWriter, r *http.Request, ps 
 		return
 	}
 	api.logger.Info("success to delete book", zap.String("id", id), zap.String("requestid", requestID))
-	resp := GenericResponse(requestID, http.StatusOK, "Book deleted successfully.", book)
+	resp := GenericResponse(requestID, http.StatusOK, "Book deleted successfully.", nil, book)
 	if err = WriteResponse(w, resp); err != nil {
 		api.logger.Error("failed to send response", zap.String("requestid", requestID), zap.Error(err))
 	}
@@ -232,7 +233,7 @@ func (api *APIHandler) UpdateBook(w http.ResponseWriter, r *http.Request, ps htt
 		return
 	}
 	api.logger.Info("success to update book", zap.String("requestid", requestID), zap.String("requestid", requestID))
-	resp := GenericResponse(requestID, http.StatusOK, "Book updated successfully.", book)
+	resp := GenericResponse(requestID, http.StatusOK, "Book updated successfully.", nil, book)
 	if err = WriteResponse(w, resp); err != nil {
 		api.logger.Error("failed to send response", zap.String("requestid", requestID), zap.Error(err))
 	}
