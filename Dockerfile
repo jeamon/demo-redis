@@ -17,7 +17,7 @@ RUN go mod download -x
 COPY . .
 
 # Build the app program inside the container.
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o app.demo.redis -a -ldflags "-extldflags '-static' -X 'main.GitCommit=$(git rev-parse --short HEAD)' -X 'main.GitTag=$(git describe --tags --abbrev=0)' -X 'main.BuildTime=$(date -u '+%Y-%m-%d %I:%M:%S %p GMT')'" .
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o app.demo.redis -a -ldflags "-extldflags '-static' -X 'main.GitCommit=$(git rev-parse --short HEAD)' -X 'main.GitTag=$(git describe --tags --abbrev=0 --exact-match 2>/dev/null)' -X 'main.BuildTime=$(date -u '+%Y-%m-%d %I:%M:%S %p GMT')'" .
 
 # Final stage with minimalist image.
 FROM scratch
