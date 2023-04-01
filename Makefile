@@ -1,5 +1,16 @@
+#SHELL=/usr/bin/env bash
+
 # set shortened commit hash as tag for compose use.
 export TAG.DEMO.REDIS=$(shell git rev-parse --short HEAD)
+
+GIT_COMMIT = $(shell git rev-parse HEAD)
+GIT_SHA    = $(shell git rev-parse --short HEAD)
+GIT_TAG    = $(shell git describe --tags --abbrev=0 --exact-match 2>/dev/null)
+GIT_DIRTY  = $(shell test -n "`git status --porcelain`" && echo "dirty" || echo "clean")
+
+
+help: ## Display help
+	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
 
 # Perform below commands
 all: static-check test.all run
@@ -10,7 +21,7 @@ static-check:
 ## Clean package and fix linters warnings
 lint:
 	go mod tidy
-	golangci-lint --fix --tests=false --timeout=2m30s run
+	golangci-lint --fix --tests=false --timeout=2m run
 
 ## Remove temporary files and cached tests results
 clean.test:
@@ -52,7 +63,7 @@ docker.build: test.all
 	docker-compose build
 
 ## Start the app service and required services
-docker.run:
+docker.up:
 	docker-compose up --detach app.demo.redis
 
 ## Stop all running services (app and redis)
@@ -62,3 +73,12 @@ docker.stop:
 ## Format the codebase
 format:
 	gofumpt -l -w .
+
+.PHONY: info
+info:
+	@echo "Version:           ${VERSION}"
+	@echo "Git Tag:           ${GIT_TAG}"
+	@echo "Git Commit:        ${GIT_COMMIT}"
+	@echo "Git Tree State:    ${GIT_DIRTY}"
+
+default: help
