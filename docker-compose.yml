@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   app.demo.redis:
-    image: app.demo.redis:latest
+    image: app.demo.redis:${LATEST_COMMIT_DEMO_REDIS}
     container_name: app.demo.redis
     build:
       dockerfile: Dockerfile
