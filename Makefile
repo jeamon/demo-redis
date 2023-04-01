@@ -20,7 +20,7 @@ EXTLDFLAGS = "-extldflags '-static' ${LDFLAGS}"
 
 # Set shortened commit hash as tag to be used by docker-compose
 # Using recursive assignment to have more uptodate tag value.
-export TAG_DEMO_REDIS=$(GIT_SHA)
+export LATEST_COMMIT_DEMO_REDIS = $(GIT_SHA)
 
 .PHONY: help
 help:
