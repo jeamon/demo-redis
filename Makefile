@@ -1,84 +1,113 @@
-#SHELL=/usr/bin/env bash
+default: help
 
-# set shortened commit hash as tag for compose use.
-export TAG.DEMO.REDIS=$(shell git rev-parse --short HEAD)
+SHELL:= /usr/bin/bash -e
+
+BINDIR := $(CURDIR)/bin
+BINNAME ?= app.demo.redis
+GOLANGCI_LINT_VERSION:=1.52.0
 
 GIT_COMMIT = $(shell git rev-parse HEAD)
 GIT_SHA    = $(shell git rev-parse --short HEAD)
 GIT_TAG    = $(shell git describe --tags --abbrev=0 --exact-match 2>/dev/null)
 GIT_DIRTY  = $(shell test -n "`git status --porcelain`" && echo "dirty" || echo "clean")
+CURRENT_TIME = $(shell date -u '+%Y-%m-%d %I:%M:%S %p GMT')
 
+LDFLAGS = -X 'main.GitCommit=${GIT_SHA}' \
+				-X 'main.GitTag=${GIT_TAG}' \
+				-X 'main.BuildTime=${CURRENT_TIME}'
 
-help: ## Display help
+EXTLDFLAGS = "-extldflags '-static' ${LDFLAGS}"
+
+# Set shortened commit hash as tag to be used by docker-compose
+# Using recursive assignment to have more uptodate tag value.
+export TAG_DEMO_REDIS=$(GIT_SHA)
+
+.PHONY: help
+help:
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
 
-# Perform below commands
-all: static-check test.all run
+.PHONY: all 
+all: lint test.all local.build ## Run linting and all tests and build the local binary.
 
-static-check:
-	golangci-lint --tests=false run
-
-## Clean package and fix linters warnings
-lint:
-	go mod tidy
-	golangci-lint --fix --tests=false --timeout=2m run
-
-## Remove temporary files and cached tests results
-clean.test:
-	go clean -testcache
-
-## Remove temporary and cached builds files
-clean.build:
-	go clean -cache
-
-## Remove temporary and cached builds files
-clean.all: clean.test clean.build
-	rm -rf ./bin
-
-## Run all tests (unit and integration and e2e) after cache cleanup
-test.all: clean.test
-	go test -v ./... -count=1
-
-## Obtain codebase testing coverage and view stats in console.
-test.cover.console:
-	go test -v -coverprofile=coverage.out ./... && go tool cover -func=coverage.out
-
-## Obtain codebase testing coverage and view stats in browser.
-test.cover.html:
-	go test -v -coverprofile=coverage.out ./... && go tool cover -html=coverage.out
-
-## Obtain codebase testing coverage and view stats on console and in browser.
-test.cover.all: clean.test test.cover.console test.cover.html
-
-## Run all tests and locally build the program
-local.build: clean.all test.all
-	CGO_ENABLED=0 go build -o bin/app.demo.redis -a -ldflags "-extldflags '-static' -X 'main.GitCommit=$(shell git rev-parse --short HEAD)' -X 'main.GitTag=$(shell git describe --tags --abbrev=0)' -X 'main.BuildTime=$(shell date -u '+%Y-%m-%d %I:%M:%S %p GMT')'" .
-
-## Run lint and test-unit commands
-local.run:
-	go run -ldflags "-X 'main.GitCommit=$(shell git rev-parse --short HEAD)' -X 'main.GitTag=$(shell git describe --tags --abbrev=0)' -X 'main.BuildTime=$(shell date -u '+%Y-%m-%d %I:%M:%S %p GMT')'" .
-
-## Execute tests then build contaners images
-docker.build: test.all 
-	docker-compose build
-
-## Start the app service and required services
-docker.up:
-	docker-compose up --detach app.demo.redis
-
-## Stop all running services (app and redis)
-docker.stop:
-	docker-compose stop
-
-## Format the codebase
-format:
+.PHONY: format
+format: ## Format the codebase
 	gofumpt -l -w .
 
 .PHONY: info
-info:
-	@echo "Version:           ${VERSION}"
+info: ## Display useful infos.
 	@echo "Git Tag:           ${GIT_TAG}"
 	@echo "Git Commit:        ${GIT_COMMIT}"
 	@echo "Git Tree State:    ${GIT_DIRTY}"
+	@echo "Current DateTime:  ${CURRENT_TIME}"
 
-default: help
+.PHONY: install-linter
+install-linter: ## Install golangci-lint tool.
+	curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v${GOLNAGCI_LINT_VERSION}
+	
+.PHONY: lint
+lint: ## Updates modules and execute linters.
+	## use `make install-linter` to install linters if missing
+	go mod tidy
+	golangci-lint -v run --skip-dirs bin
+
+.PHONY: clean.test
+clean.test: ## Remove temporary files and cached tests results.
+	go clean -testcache
+
+.PHONY: clean.build
+clean.build: ## Remove temporary and cached builds files
+	go clean -cache
+
+.PHONY: clean.all
+clean.all: clean.test clean.build ## Remove temporary and cached builds files
+	rm -rf ./bin
+
+.PHONY: test.unit
+test.unit: clean.test ## Remove cache and Run unit tests only.
+	go test -v ./... -count=1
+
+.PHONY: test.integration
+test.integration: clean.test ## Remove cache and Run integration tests only.
+	go test -v --tags=integration ./... -count=1
+
+.PHONY: test.e2e
+test.e2e: clean.test ## Remove cache and Run all e2e tests only.
+	go test -v --tags=e2e ./... -count=1
+
+.PHONY: test.all
+test.all: test.unit test.integration test.e2e ## Run all tests (unit & integration & e2e)
+
+.PHONY: coverage.console
+coverage.console: clean.test ## Testing coverage and view stats in console.
+	go test -v -coverprofile=coverage.out ./... && go tool cover -func=coverage.out
+
+.PHONY: coverage.html
+coverage.html: clean.test ## Testing coverage and view stats in browser.
+	go test -v -coverprofile=coverage.out ./... && go tool cover -html=coverage.out
+
+.PHONY: coverage.all ## Ttesting coverage and view stats both in console and browser.
+coverage.all: clean.test coverage.console coverage.html
+
+.PHONY: local.build
+local.build: clean.all test.all clean.all ## Run all tests and locally build the program
+	CGO_ENABLED=0 go build -o ${BINDIR}/${BINNAME} -a -ldflags ${EXTLDFLAGS} .
+
+.PHONY: local.run
+local.run: ## Run lint and test-unit commands
+	go run -ldflags "${LDFLAGS}" .
+
+.PHONY: docker.build
+docker.build: test.all ## Execute tests then build contaners images
+	docker-compose build
+
+.PHONY: docker.up
+docker.up: ## Start the app service and required services
+	docker-compose up --detach app.demo.redis
+
+.PHONY: docker.stop
+docker.stop: ## Stop all running services (app and redis)
+	docker-compose stop
+
+.PHONY: docker.down
+docker.down: ## Stop & Remove all services (app and redis) and network.
+	docker-compose down
