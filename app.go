@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"path/filepath"
 	"syscall"
 	"time"
 
@@ -50,7 +51,11 @@ func NewApp() (AppProvider, error) {
 		return app, fmt.Errorf("failed to initialize configurations: %s", err)
 	}
 
-	// Setup the logging module.
+	// Ensure the logs folder exists and Setup the logging module.
+	err = os.MkdirAll(filepath.Dir(config.LogFileName), 0700)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create logging folder: %s", err)
+	}
 	logFile, err := os.OpenFile(config.LogFileName, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0o644)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create logging file: %s", err)
