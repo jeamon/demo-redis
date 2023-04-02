@@ -11,33 +11,33 @@ import (
 
 // Config defines the structure of the configuration file.
 type Config struct {
-	GitCommit    string        `yaml:"git_commit"`
-	GitTag       string        `yaml:"git_tag"`
-	BuildTime    string        `yaml:"build_time"`
-	IsProduction bool          `yaml:"is_production"`
-	LogLevel     zapcore.Level `yaml:"log_level"`
-	LogFileName  string        `yaml:"log_file_name"`
+	GitCommit    string        `yaml:"git_commit", envconfig:"DRAP_GIT_COMMIT"`
+	GitTag       string        `yaml:"git_tag", envconfig:"DRAP_GIT_TAG"`
+	BuildTime    string        `yaml:"build_time", envconfig:"DRAP_BUILD_TIME"`
+	IsProduction bool          `yaml:"is_production", envconfig:"DRAP_IS_PRODUCTION"`
+	LogLevel     zapcore.Level `yaml:"log_level", envconfig:"DRAP_LOG_LEVEL"`
+	LogFile      string        `yaml:"log_file", envconfig:"DRAP_LOG_FILE"`
 
 	Server struct {
-		Host            string `yaml:"host", envconfig:"SERVER_HOST"`
-		Port            string `yaml:"port", envconfig:"SERVER_PORT"`
-		CertsFile       string `yaml:"certs_file"`
-		KeyFile         string `yaml:"key_file"`
-		RequestTimeout  int    `yaml:"request_timeout"`
-		ShutdownTimeout int    `yaml:"shutdown_timeout"`
+		Host            string `yaml:"host", envconfig:"DRAP_SERVER_HOST"`
+		Port            string `yaml:"port", envconfig:"DRAP_SERVER_PORT"`
+		CertsFile       string `yaml:"certs_file", envconfig:"DRAP_SERVER_CERTS_FILE"`
+		KeyFile         string `yaml:"key_file", envconfig:"DRAP_SERVER_KEY_FILE"`
+		RequestTimeout  int    `yaml:"request_timeout", envconfig:"DRAP_SERVER_REQUEST_TIMEOUT"`
+		ShutdownTimeout int    `yaml:"shutdown_timeout", envconfig:"DRAP_SERVER_SHUTDOWN_TIMEOUT"`
 	} `yaml:"server"`
 
 	Redis struct {
-		Host          string `yaml:"host", envconfig:"REDIS_HOST"`
-		Port          string `yaml:"port", envconfig:"REDIS_PORT"`
-		DialTimeout   int    `yaml:"dial_timeout"`
-		ReadTimeout   int    `yaml:"read_timeout"`
-		WriteTimeout  int    `yaml:"write_timeout"`
-		PoolSize      int    `yaml:"pool_size"`
-		PoolTimeout   int    `yaml:"pool_timeout"`
-		Username      string `yaml:"username"`
-		Password      string `yaml:"password", envconfig:"REDIS_PASSWORD"`
-		DatabaseIndex int    `yaml:"db_index", envconfig:"REDIS_DB_INDEX"`
+		Host          string `yaml:"host", envconfig:"DRAP_REDIS_HOST"`
+		Port          string `yaml:"port", envconfig:"DRAP_REDIS_PORT"`
+		DialTimeout   int    `yaml:"dial_timeout", envconfig:"DRAP_REDIS_DIAL_TIMEOUT"`
+		ReadTimeout   int    `yaml:"read_timeout", envconfig:"DRAP_REDIS_READ_TIMEOUT"`
+		WriteTimeout  int    `yaml:"write_timeout", envconfig:"DRAP_REDIS_WRITE_TIMEOUT"`
+		PoolSize      int    `yaml:"pool_size", envconfig:"DRAP_REDIS_POOL_SIZE"`
+		PoolTimeout   int    `yaml:"pool_timeout", envconfig:"DRAP_REDIS_POOL_TIMEOUT"`
+		Username      string `yaml:"username", envconfig:"DRAP_REDIS_USERNAME"`
+		Password      string `yaml:"password", envconfig:"DRAP_REDIS_PASSWORD"`
+		DatabaseIndex int    `yaml:"db_index", envconfig:"DRAP_REDIS_DATABASE_INDEX"`
 	} `yaml:"redis"`
 }
 

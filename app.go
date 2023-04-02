@@ -41,7 +41,8 @@ func NewApp() (AppProvider, error) {
 		return app, fmt.Errorf("failed to load configurations from file: %s", err)
 	}
 
-	err = LoadConfigEnvs("", config)
+	// Use environment variables with prefix `DRAP`.
+	err = LoadConfigEnvs("DRAP", config)
 	if err != nil {
 		return app, fmt.Errorf("failed to load configurations from environment: %s", err)
 	}
@@ -52,11 +53,11 @@ func NewApp() (AppProvider, error) {
 	}
 
 	// Ensure the logs folder exists and Setup the logging module.
-	err = os.MkdirAll(filepath.Dir(config.LogFileName), 0700)
+	err = os.MkdirAll(filepath.Dir(config.LogFile), 0700)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create logging folder: %s", err)
 	}
-	logFile, err := os.OpenFile(config.LogFileName, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0o644)
+	logFile, err := os.OpenFile(config.LogFile, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0o644)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create logging file: %s", err)
 	}
