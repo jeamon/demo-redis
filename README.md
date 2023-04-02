@@ -48,6 +48,10 @@ Finally do the same changes inside the `config.env` file for both `server host` 
         ```shell
         $ make local.run
         ```
+
+        ```shell
+        $ DRAP_REDIS_HOST=<IP.ADDRESS.REDIS.HOST> make local.run
+        ```
         
         ```shell
         $ go run -ldflags "-X 'main.GitCommit=$(shell git rev-parse --short HEAD)' -X 'main.GitTag=$(shell git describe --tags --abbrev=0)' -X 'main.BuildTime=$(shell date -u '+%Y-%m-%d %I:%M:%S %p GMT')'" .
@@ -76,11 +80,27 @@ Finally do the same changes inside the `config.env` file for both `server host` 
 **Step 4:** Check by performing basics requests (from `curl` or `postman` or `browser`)
 
 ```shell
+## example of basic app checking
 $ http://<server-address>:8080/
+
+## example of fetching app status info
 $ http://<server-address>:8080/status
+
+## example of all books listing request
 $ http://<server-address>:8080/v1/books
+
+## example of pulling in-use app settings
 $ http://<server-address>:8080/internal/configs
 ```
+
+```shell
+## example of book creation request
+
+$ curl -X POST http://<server-address>:8080/v1/books \
+   -H 'Content-Type: application/json; charset=UTF-8' \
+   -d '{"title": "golang programming", "description": "Pratical golang exercices", "author": "Jerome Amon", "price": "10$"}'
+```
+
 
 ## Contact
 
