@@ -8,13 +8,13 @@
 # logs is printed on console and file
 is_production: false
 log_level: "info"
-log_file_name: "./logs/logs.log"
+log_file: "logs/logs.log"
 
 # Could be manually set or envs variables
 # or auto detected with build flags.
-git_commit: "n/a"
-git_tag: "n/a"
-build_time: "n/a"
+git_commit: ""
+git_tag: ""
+build_time: ""
 
 # Api server settings
 server:
