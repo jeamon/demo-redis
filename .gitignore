@@ -23,3 +23,6 @@ app.demo.redis
 # log folder and files
 logs/
 *.log
+
+# Personal tasks list. 
+TODO.txt
