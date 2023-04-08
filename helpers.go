@@ -37,7 +37,10 @@ func GenerateRequestID() string {
 
 // GetRequestIDFromContext provides the associated id of a request.
 func GetRequestIDFromContext(ctx context.Context) string {
-	return ctx.Value(ContextRequestID).(string)
+	if val := ctx.Value(ContextRequestID); val != nil {
+		return val.(string)
+	}
+	return ""
 }
 
 // DecodeCreateOrUpdateBookRequestBody is a helper function to read the content of a book creation or update request.
