@@ -83,8 +83,15 @@ func NewApp() (AppProvider, error) {
 		&Statistics{version: config.GitTag, started: time.Now()},
 		bookService,
 	)
-	router := httprouter.New()
-	apiService.SetupRoutes(router)
+
+	// Build the stack of middlewares.
+	middlewares := Middlewares{
+		apiService.PanicRecoveryMiddleware,
+		apiService.CoreMiddleware,
+	}
+
+	// Configure the endpoints with their handlers and middlewares.
+	router := apiService.SetupRoutes(httprouter.New(), middlewares)
 
 	// Start the api server.
 	srv := &http.Server{
