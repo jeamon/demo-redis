@@ -3,7 +3,7 @@ package main
 import "github.com/julienschmidt/httprouter"
 
 // SetupRoutes enforces the api routes.
-func (api *APIHandler) SetupRoutes(router *httprouter.Router, m Middlewares) *httprouter.Router {
+func (api *APIHandler) SetupRoutes(router *httprouter.Router, m *Middlewares) *httprouter.Router {
 	router.RedirectTrailingSlash = true
 	router.GET("/", m.Chain(api.Index))
 	router.GET("/status", m.Chain(api.Index))
