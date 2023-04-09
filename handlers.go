@@ -32,13 +32,6 @@ func NewAPIHandler(logger *zap.Logger, config *Config, stats *Statistics, bs Boo
 	return &APIHandler{logger: logger, config: config, stats: stats, bookService: bs}
 }
 
-// setupCORS is a helper function which set cors headers.
-func setupCORS(w *http.ResponseWriter) {
-	(*w).Header().Set("Access-Control-Allow-Origin", "*")
-	(*w).Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE, UPDATE, PATCH, HEAD")
-	(*w).Header().Set("Access-Control-Allow-Headers", "Origin, Access-Control-Request-Method, Access-Control-Request-Headers, Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, User-Agent, Accept-Language, Referer, DNT, Connection, Pragma, Cache-Control, TE")
-}
-
 func (api *APIHandler) Index(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	requestID := GetRequestIDFromContext(r.Context())
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
