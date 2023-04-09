@@ -37,7 +37,7 @@ func (api *APIHandler) CoreMiddleware(next httprouter.Handle) httprouter.Handle 
 			zap.String("agent", r.UserAgent()),
 			zap.String("referer", r.Referer()),
 		)
-		setupCORS(&w)
+
 		next(w, r, ps)
 		api.logger.Info(
 			"request",
@@ -46,6 +46,16 @@ func (api *APIHandler) CoreMiddleware(next httprouter.Handle) httprouter.Handle 
 			zap.String("url", r.URL.Path),
 			zap.Duration("duration", time.Since(start)),
 		)
+	}
+}
+
+// CORSMiddleware intercepts each incoming HTTP calls then apply cors headers on it.
+func CORSMiddleware(next httprouter.Handle) httprouter.Handle {
+	return func(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE, UPDATE, PATCH, HEAD")
+		w.Header().Set("Access-Control-Allow-Headers", "Origin, Access-Control-Request-Method, Access-Control-Request-Headers, Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, User-Agent, Accept-Language, Referer, DNT, Connection, Pragma, Cache-Control, TE")
+		next(w, r, ps)
 	}
 }
 
@@ -70,15 +80,15 @@ func (api *APIHandler) PanicRecoveryMiddleware(next httprouter.Handle) httproute
 
 // Chain wraps a given httprouter.Handle with a list of middlewares.
 // It does by starting from the last middleware from the list.
-func (m Middlewares) Chain(h httprouter.Handle) httprouter.Handle {
-	if len(m) == 0 {
+func (m *Middlewares) Chain(h httprouter.Handle) httprouter.Handle {
+	if len(*m) == 0 {
 		return h
 	}
-	lg := len(m)
-	handle := m[lg-1](h)
+	lg := len(*m)
+	handle := (*m)[lg-1](h)
 
 	for i := lg - 2; i >= 0; i-- {
-		handle = m[i](handle)
+		handle = (*m)[i](handle)
 	}
 
 	return handle

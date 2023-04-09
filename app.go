@@ -53,7 +53,7 @@ func NewApp() (AppProvider, error) {
 	}
 
 	// Ensure the logs folder exists and Setup the logging module.
-	err = os.MkdirAll(filepath.Dir(config.LogFile), 0700)
+	err = os.MkdirAll(filepath.Dir(config.LogFile), 0o700)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create logging folder: %s", err)
 	}
@@ -87,11 +87,12 @@ func NewApp() (AppProvider, error) {
 	// Build the stack of middlewares.
 	middlewares := Middlewares{
 		apiService.PanicRecoveryMiddleware,
+		CORSMiddleware,
 		apiService.CoreMiddleware,
 	}
 
 	// Configure the endpoints with their handlers and middlewares.
-	router := apiService.SetupRoutes(httprouter.New(), middlewares)
+	router := apiService.SetupRoutes(httprouter.New(), &middlewares)
 
 	// Start the api server.
 	srv := &http.Server{
