@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"sync/atomic"
 	"time"
 
 	"github.com/julienschmidt/httprouter"
@@ -33,16 +32,20 @@ func NewAPIHandler(logger *zap.Logger, config *Config, stats *Statistics, bs Boo
 }
 
 func (api *APIHandler) Index(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	http.Redirect(w, r, "/status", http.StatusSeeOther)
+}
+
+func (api *APIHandler) Status(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	requestID := GetRequestIDFromContext(r.Context())
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	if err := json.NewEncoder(w).Encode(
 		map[string]interface{}{
-			"called":  atomic.LoadUint64(&api.stats.called),
-			"status":  fmt.Sprintf("up & running since %.0f mins", time.Since(api.stats.started).Minutes()),
-			"message": "Hello. Books store api is available. Enjoy :)",
+			"requestid": requestID,
+			"status":    fmt.Sprintf("up & running since %.0f mins", time.Since(api.stats.started).Minutes()),
+			"message":   "Hello. Books store api is available. Enjoy :)",
 		},
 	); err != nil {
-		api.logger.Error("failed to send index response", zap.String("requestid", requestID), zap.Error(err))
+		api.logger.Error("failed to send status response", zap.String("requestid", requestID), zap.Error(err))
 	}
 }
 
