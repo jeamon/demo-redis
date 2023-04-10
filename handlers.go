@@ -31,10 +31,12 @@ func NewAPIHandler(logger *zap.Logger, config *Config, stats *Statistics, bs Boo
 	return &APIHandler{logger: logger, config: config, stats: stats, bookService: bs}
 }
 
+// Index provides same details like `Status` handler by redirecting the request.
 func (api *APIHandler) Index(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	http.Redirect(w, r, "/status", http.StatusSeeOther)
 }
 
+// Status provides basics details about the application to the public users.
 func (api *APIHandler) Status(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	requestID := GetRequestIDFromContext(r.Context())
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
