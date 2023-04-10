@@ -87,6 +87,7 @@ func NewApp() (AppProvider, error) {
 	// Build the stack of middlewares.
 	middlewares := Middlewares{
 		apiService.PanicRecoveryMiddleware,
+		apiService.RequestIDMiddleware,
 		CORSMiddleware,
 		apiService.CoreMiddleware,
 	}
