@@ -17,16 +17,16 @@ type MiddlewareFunc func(httprouter.Handle) httprouter.Handle
 // middleware functions used to build a single chain.
 type Middlewares []MiddlewareFunc
 
-// CoreMiddleware is used to intercept incoming HTTP calls then attach a unique id to each request
-// and log each request details and finally apply cors headers on it.
+// CoreMiddleware helps count the number of requests received and adds a timeout
+// to each request and logs each request processing result.
 func (api *APIHandler) CoreMiddleware(next httprouter.Handle) httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		atomic.AddUint64(&api.stats.called, 1)
 		start := time.Now()
-		requestID := GenerateRequestID()
-		ctx, cancel := context.WithTimeout(r.Context(), time.Duration(api.config.Server.RequestTimeout)*time.Second)
+		ctx := r.Context()
+		requestID := GetRequestIDFromContext(ctx)
+		ctx, cancel := context.WithTimeout(ctx, time.Duration(api.config.Server.RequestTimeout)*time.Second)
 		defer cancel()
-		ctx = context.WithValue(ctx, ContextRequestID, requestID)
 		r = r.WithContext(ctx)
 		api.logger.Info(
 			"request",
@@ -46,6 +46,16 @@ func (api *APIHandler) CoreMiddleware(next httprouter.Handle) httprouter.Handle 
 			zap.String("url", r.URL.Path),
 			zap.Duration("duration", time.Since(start)),
 		)
+	}
+}
+
+// RequestIDMiddleware generates and add a unique id to the request context.
+func (api *APIHandler) RequestIDMiddleware(next httprouter.Handle) httprouter.Handle {
+	return func(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+		requestID := GenerateRequestID()
+		ctx := context.WithValue(r.Context(), ContextRequestID, requestID)
+		r = r.WithContext(ctx)
+		next(w, r, ps)
 	}
 }
 
