@@ -98,7 +98,10 @@ func (r *redisBookStorage) GetAll(ctx context.Context) ([]Book, error) {
 	for _, bookJSONString := range mapBooks {
 		var book Book
 		if err = json.Unmarshal([]byte(bookJSONString), &book); err != nil {
-			r.logger.Error("failed to unmarshall details of book", zap.String("requestid", GetRequestIDFromContext(ctx)), zap.Error(err))
+			r.logger.Error("failed to unmarshall details of book",
+				zap.String("requestid", GetValueFromContext(ctx, ContextRequestID)),
+				zap.Error(err),
+			)
 			continue
 		}
 		books = append(books, book)

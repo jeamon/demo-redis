@@ -38,7 +38,7 @@ func (api *APIHandler) Index(w http.ResponseWriter, r *http.Request, _ httproute
 
 // Status provides basics details about the application to the public users.
 func (api *APIHandler) Status(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-	requestID := GetRequestIDFromContext(r.Context())
+	requestID := GetValueFromContext(r.Context(), ContextRequestID)
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	if err := json.NewEncoder(w).Encode(
 		map[string]interface{}{
@@ -53,7 +53,7 @@ func (api *APIHandler) Status(w http.ResponseWriter, r *http.Request, _ httprout
 
 // GetConfigs serves current in-use configurations/settings.
 func (api *APIHandler) GetConfigs(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-	requestID := GetRequestIDFromContext(r.Context())
+	requestID := GetValueFromContext(r.Context(), ContextRequestID)
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	if err := json.NewEncoder(w).Encode(
 		map[string]interface{}{
@@ -66,7 +66,7 @@ func (api *APIHandler) GetConfigs(w http.ResponseWriter, r *http.Request, _ http
 
 func (api *APIHandler) CreateBook(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	book := Book{}
-	requestID := GetRequestIDFromContext(r.Context())
+	requestID := GetValueFromContext(r.Context(), ContextRequestID)
 	err := DecodeCreateOrUpdateBookRequestBody(r, &book)
 	if err != nil {
 		api.logger.Error("failed to create book", zap.String("requestid", requestID), zap.Error(err))
@@ -108,7 +108,7 @@ func (api *APIHandler) CreateBook(w http.ResponseWriter, r *http.Request, ps htt
 }
 
 func (api *APIHandler) GetAllBooks(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-	requestID := GetRequestIDFromContext(r.Context())
+	requestID := GetValueFromContext(r.Context(), ContextRequestID)
 	books, err := api.bookService.GetAll(r.Context())
 	if err != nil {
 		api.logger.Error("failed to get all books", zap.String("requestid", requestID), zap.Error(err))
@@ -127,7 +127,7 @@ func (api *APIHandler) GetAllBooks(w http.ResponseWriter, r *http.Request, _ htt
 }
 
 func (api *APIHandler) GetOneBook(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	requestID := GetRequestIDFromContext(r.Context())
+	requestID := GetValueFromContext(r.Context(), ContextRequestID)
 	id := ps.ByName("id")
 	book, err := api.bookService.GetOne(r.Context(), id)
 	if err == ErrNotFoundBook {
@@ -154,7 +154,7 @@ func (api *APIHandler) GetOneBook(w http.ResponseWriter, r *http.Request, ps htt
 }
 
 func (api *APIHandler) DeleteOneBook(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	requestID := GetRequestIDFromContext(r.Context())
+	requestID := GetValueFromContext(r.Context(), ContextRequestID)
 	id := ps.ByName("id")
 	book, err := api.bookService.GetOne(r.Context(), id)
 	if err == ErrNotFoundBook {
@@ -200,7 +200,7 @@ func (api *APIHandler) DeleteOneBook(w http.ResponseWriter, r *http.Request, ps 
 
 func (api *APIHandler) UpdateBook(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	var book Book
-	requestID := GetRequestIDFromContext(r.Context())
+	requestID := GetValueFromContext(r.Context(), ContextRequestID)
 	err := DecodeCreateOrUpdateBookRequestBody(r, &book)
 	if err != nil {
 		api.logger.Error("failed to update book", zap.String("requestid", requestID), zap.Error(err))

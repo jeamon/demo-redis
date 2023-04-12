@@ -24,7 +24,7 @@ func (api *APIHandler) CoreMiddleware(next httprouter.Handle) httprouter.Handle 
 		atomic.AddUint64(&api.stats.called, 1)
 		start := time.Now()
 		ctx := r.Context()
-		requestID := GetRequestIDFromContext(ctx)
+		requestID := GetValueFromContext(ctx, ContextRequestID)
 		ctx, cancel := context.WithTimeout(ctx, time.Duration(api.config.Server.RequestTimeout)*time.Second)
 		defer cancel()
 		r = r.WithContext(ctx)
@@ -75,7 +75,7 @@ func (api *APIHandler) PanicRecoveryMiddleware(next httprouter.Handle) httproute
 	return func(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		recovery := func() {
 			if err := recover(); err != nil {
-				requestID := GetRequestIDFromContext(r.Context())
+				requestID := GetValueFromContext(r.Context(), ContextRequestID)
 				api.logger.Error("panic occurred", zap.String("requestid", requestID), zap.Any("error", err))
 				errResp := NewAPIError(requestID, http.StatusInternalServerError, "failed to process the request.", EmptyData)
 				if err := WriteErrorResponse(w, errResp); err != nil {
