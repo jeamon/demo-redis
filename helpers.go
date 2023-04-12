@@ -15,7 +15,7 @@ var ErrNotFoundBook = errors.New("book not found")
 
 type ContextKey string
 
-const ContextRequestID ContextKey = "x-requestid"
+const ContextRequestID ContextKey = "request.id"
 
 type missingFieldError string
 
@@ -35,9 +35,10 @@ func GenerateRequestID() string {
 	return "r:" + id.String()
 }
 
-// GetRequestIDFromContext provides the associated id of a request.
-func GetRequestIDFromContext(ctx context.Context) string {
-	if val := ctx.Value(ContextRequestID); val != nil {
+// GetValueFromContext returns the value of a given key in the context
+// if this key is not available, it returns an empty string.
+func GetValueFromContext(ctx context.Context, contextKey ContextKey) string {
+	if val := ctx.Value(contextKey); val != nil {
 		return val.(string)
 	}
 	return ""
