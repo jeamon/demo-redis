@@ -16,6 +16,7 @@ var ErrNotFoundBook = errors.New("book not found")
 type ContextKey string
 
 const ContextRequestID ContextKey = "request.id"
+const ContextRequestNumber ContextKey = "request.number"
 
 type missingFieldError string
 
