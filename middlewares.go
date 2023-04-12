@@ -17,11 +17,10 @@ type MiddlewareFunc func(httprouter.Handle) httprouter.Handle
 // middleware functions used to build a single chain.
 type Middlewares []MiddlewareFunc
 
-// CoreMiddleware helps count the number of requests received and adds a timeout
-// to each request and logs each request processing result.
+// CoreMiddleware adds a timeout and setup duration measurement for each request
+// and logs its processing details.
 func (api *APIHandler) CoreMiddleware(next httprouter.Handle) httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-		atomic.AddUint64(&api.stats.called, 1)
 		start := time.Now()
 		ctx := r.Context()
 		requestID := GetValueFromContext(ctx, ContextRequestID)
@@ -46,6 +45,16 @@ func (api *APIHandler) CoreMiddleware(next httprouter.Handle) httprouter.Handle 
 			zap.String("url", r.URL.Path),
 			zap.Duration("duration", time.Since(start)),
 		)
+	}
+}
+
+// RequestsCounterMiddleware increments the number of received requests statistics and add this
+// new value to the request context to be used during logging as `request.num` field.
+func (api *APIHandler) RequestsCounterMiddleware(next httprouter.Handle) httprouter.Handle {
+	return func(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+		ctx := context.WithValue(r.Context(), ContextRequestNumber, atomic.AddUint64(&api.stats.called, 1))
+		r = r.WithContext(ctx)
+		next(w, r, ps)
 	}
 }
 
