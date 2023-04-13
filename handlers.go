@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"sync/atomic"
 	"time"
 
 	"github.com/julienschmidt/httprouter"
@@ -12,6 +13,7 @@ import (
 
 var EmptyData = struct{}{}
 
+// Statistics holds app stats for ops.
 type Statistics struct {
 	version string
 	called  uint64
@@ -48,6 +50,23 @@ func (api *APIHandler) Status(w http.ResponseWriter, r *http.Request, _ httprout
 		},
 	); err != nil {
 		api.logger.Error("failed to send status response", zap.String("requestid", requestID), zap.Error(err))
+	}
+}
+
+// GetStatistics provides useful details about the application to the internal users.
+func (api *APIHandler) GetStatistics(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	requestID := GetValueFromContext(r.Context(), ContextRequestID)
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	if err := json.NewEncoder(w).Encode(
+		map[string]interface{}{
+			"requestid": requestID,
+			"version":   api.stats.version,
+			"called":    atomic.LoadUint64(&api.stats.called),
+			"started":   api.stats.started.Format(time.RFC1123),
+			"uptime":    fmt.Sprintf("%.0f mins", time.Since(api.stats.started).Minutes()),
+		},
+	); err != nil {
+		api.logger.Error("failed to send statistics response", zap.String("requestid", requestID), zap.Error(err))
 	}
 }
 
