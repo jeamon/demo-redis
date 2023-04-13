@@ -84,6 +84,11 @@ func NewApp() (AppProvider, error) {
 		bookService,
 	)
 
+	// Use git commit in case the tag is not set.
+	if config.GitTag == "" {
+		apiService.stats.version = config.GitCommit
+	}
+
 	// Build the stack of middlewares.
 	middlewares := Middlewares{
 		apiService.PanicRecoveryMiddleware,
