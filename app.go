@@ -103,8 +103,13 @@ func NewApp() (AppProvider, error) {
 
 	// Start the api server.
 	srv := &http.Server{
-		Addr:    fmt.Sprintf("%s:%s", config.Server.Host, config.Server.Port),
-		Handler: router,
+		ReadTimeout:  config.Server.ReadTimeout,
+		WriteTimeout: config.Server.WriteTimeout,
+		Addr:         fmt.Sprintf("%s:%s", config.Server.Host, config.Server.Port),
+		Handler: http.TimeoutHandler(
+			router,
+			config.Server.RequestTimeout,
+			"Timeout. Processing taking too long. Please reach out to support."),
 	}
 
 	return &App{
@@ -176,7 +181,7 @@ func (app *App) Stop(nCtx, gCtx context.Context) func() error {
 			app.logger.Info("api server stopping. reason: errored at running")
 		}
 
-		sCtx, cancel := context.WithTimeout(context.Background(), time.Duration(app.config.Server.ShutdownTimeout)*time.Second)
+		sCtx, cancel := context.WithTimeout(context.Background(), app.config.Server.ShutdownTimeout)
 		defer cancel()
 		err := app.server.Shutdown(sCtx)
 		switch err {
