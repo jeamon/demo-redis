@@ -3,6 +3,7 @@ package main
 import (
 	"errors"
 	"os"
+	"time"
 
 	"github.com/kelseyhightower/envconfig"
 	"go.uber.org/zap/zapcore"
@@ -19,12 +20,14 @@ type Config struct {
 	LogFile      string        `yaml:"log_file", envconfig:"DRAP_LOG_FILE"`
 
 	Server struct {
-		Host            string `yaml:"host", envconfig:"DRAP_SERVER_HOST"`
-		Port            string `yaml:"port", envconfig:"DRAP_SERVER_PORT"`
-		CertsFile       string `yaml:"certs_file", envconfig:"DRAP_SERVER_CERTS_FILE"`
-		KeyFile         string `yaml:"key_file", envconfig:"DRAP_SERVER_KEY_FILE"`
-		RequestTimeout  int    `yaml:"request_timeout", envconfig:"DRAP_SERVER_REQUEST_TIMEOUT"`
-		ShutdownTimeout int    `yaml:"shutdown_timeout", envconfig:"DRAP_SERVER_SHUTDOWN_TIMEOUT"`
+		Host            string        `yaml:"host", envconfig:"DRAP_SERVER_HOST"`
+		Port            string        `yaml:"port", envconfig:"DRAP_SERVER_PORT"`
+		CertsFile       string        `yaml:"certs_file", envconfig:"DRAP_SERVER_CERTS_FILE"`
+		KeyFile         string        `yaml:"key_file", envconfig:"DRAP_SERVER_KEY_FILE"`
+		ReadTimeout     time.Duration `yaml:"read_timeout", envconfig:"DRAP_SERVER_READ_TIMEOUT"`
+		WriteTimeout    time.Duration `yaml:"write_timeout", envconfig:"DRAP_SERVER_WRITE_TIMEOUT"`
+		RequestTimeout  time.Duration `yaml:"request_timeout", envconfig:"DRAP_SERVER_REQUEST_TIMEOUT"`
+		ShutdownTimeout time.Duration `yaml:"shutdown_timeout", envconfig:"DRAP_SERVER_SHUTDOWN_TIMEOUT"`
 	} `yaml:"server"`
 
 	Redis struct {
