@@ -17,16 +17,12 @@ type MiddlewareFunc func(httprouter.Handle) httprouter.Handle
 // middleware functions used to build a single chain.
 type Middlewares []MiddlewareFunc
 
-// CoreMiddleware adds a timeout and setup duration measurement for each request
-// and logs its processing details.
+// CoreMiddleware setup the duration measurement for each request and logs its result.
 func (api *APIHandler) CoreMiddleware(next httprouter.Handle) httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		start := time.Now()
-		ctx := r.Context()
-		requestID := GetValueFromContext(ctx, ContextRequestID)
-		ctx, cancel := context.WithTimeout(ctx, time.Duration(api.config.Server.RequestTimeout)*time.Second)
-		defer cancel()
-		r = r.WithContext(ctx)
+		requestID := GetValueFromContext(r.Context(), ContextRequestID)
+
 		api.logger.Info(
 			"request",
 			zap.String("requestid", requestID),
