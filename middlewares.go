@@ -25,21 +25,21 @@ func (api *APIHandler) CoreMiddleware(next httprouter.Handle) httprouter.Handle 
 
 		api.logger.Info(
 			"request",
-			zap.String("requestid", requestID),
-			zap.String("method", r.Method),
-			zap.String("url", r.URL.Path),
-			zap.String("ip", GetRequestSourceIP(r)),
-			zap.String("agent", r.UserAgent()),
-			zap.String("referer", r.Referer()),
+			zap.String("request.id", requestID),
+			zap.String("request.method", r.Method),
+			zap.String("request.path", r.URL.Path),
+			zap.String("request.ip", GetRequestSourceIP(r)),
+			zap.String("request.agent", r.UserAgent()),
+			zap.String("request.referer", r.Referer()),
 		)
 
 		next(w, r, ps)
 		api.logger.Info(
 			"request",
-			zap.String("requestid", requestID),
-			zap.String("method", r.Method),
-			zap.String("url", r.URL.Path),
-			zap.Duration("duration", time.Since(start)),
+			zap.String("request.id", requestID),
+			zap.String("request.method", r.Method),
+			zap.String("request.path", r.URL.Path),
+			zap.Duration("request.duration", time.Since(start)),
 		)
 	}
 }
@@ -81,10 +81,10 @@ func (api *APIHandler) PanicRecoveryMiddleware(next httprouter.Handle) httproute
 		recovery := func() {
 			if err := recover(); err != nil {
 				requestID := GetValueFromContext(r.Context(), ContextRequestID)
-				api.logger.Error("panic occurred", zap.String("requestid", requestID), zap.Any("error", err))
+				api.logger.Error("panic occurred", zap.String("request.id", requestID), zap.Any("error", err))
 				errResp := NewAPIError(requestID, http.StatusInternalServerError, "failed to process the request.", EmptyData)
 				if err := WriteErrorResponse(w, errResp); err != nil {
-					api.logger.Error("failed to send error response", zap.String("requestid", requestID), zap.Error(err))
+					api.logger.Error("failed to send error response", zap.String("request.id", requestID), zap.Error(err))
 				}
 			}
 		}
