@@ -30,7 +30,7 @@ type App struct {
 	cleanups    []func()
 }
 
-// NewApp provides an instance
+// NewApp provides an instance of App.
 func NewApp() (AppProvider, error) {
 	var err error
 	var app *App
@@ -94,6 +94,7 @@ func NewApp() (AppProvider, error) {
 		apiService.PanicRecoveryMiddleware,
 		apiService.RequestsCounterMiddleware,
 		apiService.RequestIDMiddleware,
+		apiService.AddLoggerMiddleware,
 		CORSMiddleware,
 		apiService.CoreMiddleware,
 	}
@@ -106,7 +107,7 @@ func NewApp() (AppProvider, error) {
 		config.Server.RequestTimeout,
 		"Timeout. Processing taking too long. Please reach out to support.")
 
-	// Start the api server.
+	// Build the api server definition.
 	srv := &http.Server{
 		ReadTimeout:  config.Server.ReadTimeout,
 		WriteTimeout: config.Server.WriteTimeout,
