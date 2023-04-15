@@ -20,14 +20,24 @@ type Middlewares []MiddlewareFunc
 // CoreMiddleware setup the duration measurement for each request and logs its result.
 func (api *APIHandler) CoreMiddleware(next httprouter.Handle) httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+		logger := api.GetLoggerFromContext(r.Context())
 		start := time.Now()
-		requestID := GetValueFromContext(r.Context(), ContextRequestID)
-		requestNum := GetValueFromContext(r.Context(), ContextRequestNumber)
-
-		api.logger.Info(
+		next(w, r, ps)
+		logger.Info(
 			"request",
+			zap.Duration("request.duration", time.Since(start)),
+		)
+	}
+}
+
+// AddLoggerMiddleware creates a logger with pre-populated fields for each request.
+func (api *APIHandler) AddLoggerMiddleware(next httprouter.Handle) httprouter.Handle {
+	return func(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+		requestID := GetValueFromContext(r.Context(), ContextRequestID)
+		requestNum := GetRequestNumberFromContext(r.Context())
+		logger := api.logger.With(
 			zap.String("request.id", requestID),
-			zap.String("request.number", requestNum),
+			zap.Uint64("request.number", requestNum),
 			zap.String("request.method", r.Method),
 			zap.String("request.path", r.URL.Path),
 			zap.String("request.ip", GetRequestSourceIP(r)),
@@ -35,15 +45,9 @@ func (api *APIHandler) CoreMiddleware(next httprouter.Handle) httprouter.Handle 
 			zap.String("request.referer", r.Referer()),
 		)
 
+		ctx := context.WithValue(r.Context(), ContextRequestLogger, logger)
+		r = r.WithContext(ctx)
 		next(w, r, ps)
-		api.logger.Info(
-			"request",
-			zap.String("request.id", requestID),
-			zap.String("request.number", requestNum),
-			zap.String("request.method", r.Method),
-			zap.String("request.path", r.URL.Path),
-			zap.Duration("request.duration", time.Since(start)),
-		)
 	}
 }
 
