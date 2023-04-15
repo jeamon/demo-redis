@@ -1,11 +1,16 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"os"
 
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
+)
+
+const (
+	ContextRequestLogger ContextKey = "request.logger"
 )
 
 // SetupLogging is a helper function that initialize the logging module.
@@ -51,4 +56,14 @@ func SetupLogging(config *Config, logFile *os.File) (*zap.Logger, func()) {
 	}
 
 	return logger, flusher
+}
+
+// GetLoggerFromCtx retrieves previously set logger from the context and returns it.
+// If the logger can't be retrieved it will return the initial logger of the App.
+func (api *APIHandler) GetLoggerFromContext(ctx context.Context) *zap.Logger {
+	value := ctx.Value(ContextRequestLogger)
+	if value != nil {
+		return value.(*zap.Logger)
+	}
+	return api.logger
 }
