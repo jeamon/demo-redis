@@ -11,13 +11,6 @@ import (
 	"github.com/gofrs/uuid"
 )
 
-const (
-	BookIDPrefix         string     = "b"
-	RequestIDPrefix      string     = "r"
-	ContextRequestID     ContextKey = "request.id"
-	ContextRequestNumber ContextKey = "request.number"
-)
-
 var (
 	ErrNotFoundBook = errors.New("book not found")
 )
@@ -25,6 +18,13 @@ var (
 type (
 	ContextKey        string
 	missingFieldError string
+)
+
+const (
+	BookIDPrefix         string     = "b"
+	RequestIDPrefix      string     = "r"
+	ContextRequestID     ContextKey = "request.id"
+	ContextRequestNumber ContextKey = "request.number"
 )
 
 func (m missingFieldError) Error() string {
@@ -44,6 +44,15 @@ func GetValueFromContext(ctx context.Context, contextKey ContextKey) string {
 		return val.(string)
 	}
 	return ""
+}
+
+// GetRequestNumberFromContext returns the request number set in
+// the context. if not previously set then it returns 0.
+func GetRequestNumberFromContext(ctx context.Context) uint64 {
+	if val := ctx.Value(ContextRequestNumber); val != nil {
+		return val.(uint64)
+	}
+	return 0
 }
 
 // DecodeCreateOrUpdateBookRequestBody is a helper function to read the content of a book creation or update request.
