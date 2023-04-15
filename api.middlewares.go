@@ -22,10 +22,12 @@ func (api *APIHandler) CoreMiddleware(next httprouter.Handle) httprouter.Handle 
 	return func(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		start := time.Now()
 		requestID := GetValueFromContext(r.Context(), ContextRequestID)
+		requestNum := GetValueFromContext(r.Context(), ContextRequestNumber)
 
 		api.logger.Info(
 			"request",
 			zap.String("request.id", requestID),
+			zap.String("request.number", requestNum),
 			zap.String("request.method", r.Method),
 			zap.String("request.path", r.URL.Path),
 			zap.String("request.ip", GetRequestSourceIP(r)),
@@ -37,6 +39,7 @@ func (api *APIHandler) CoreMiddleware(next httprouter.Handle) httprouter.Handle 
 		api.logger.Info(
 			"request",
 			zap.String("request.id", requestID),
+			zap.String("request.number", requestNum),
 			zap.String("request.method", r.Method),
 			zap.String("request.path", r.URL.Path),
 			zap.Duration("request.duration", time.Since(start)),
