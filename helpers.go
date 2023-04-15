@@ -11,29 +11,30 @@ import (
 	"github.com/gofrs/uuid"
 )
 
-var ErrNotFoundBook = errors.New("book not found")
+const (
+	BookIDPrefix         string     = "b"
+	RequestIDPrefix      string     = "r"
+	ContextRequestID     ContextKey = "request.id"
+	ContextRequestNumber ContextKey = "request.number"
+)
 
-type ContextKey string
+var (
+	ErrNotFoundBook = errors.New("book not found")
+)
 
-const ContextRequestID ContextKey = "request.id"
-const ContextRequestNumber ContextKey = "request.number"
-
-type missingFieldError string
+type (
+	ContextKey        string
+	missingFieldError string
+)
 
 func (m missingFieldError) Error() string {
 	return string(m) + " is required"
 }
 
-// GenerateBookID provides a random uid to identify a book.
-func GenerateBookID() string {
+// GenerateID provides a random uid.
+func GenerateID(prefix string) string {
 	id, _ := uuid.NewV4()
-	return "b:" + id.String()
-}
-
-// GenerateRequestID provides a random uid to identify a request.
-func GenerateRequestID() string {
-	id, _ := uuid.NewV4()
-	return "r:" + id.String()
+	return prefix + ":" + id.String()
 }
 
 // GetValueFromContext returns the value of a given key in the context
