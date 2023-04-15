@@ -96,7 +96,7 @@ func NewApp() (AppProvider, error) {
 		apiService.RequestIDMiddleware,
 		apiService.AddLoggerMiddleware,
 		CORSMiddleware,
-		apiService.CoreMiddleware,
+		apiService.DurationMiddleware,
 	}
 
 	// Configure the endpoints with their handlers and middlewares.
