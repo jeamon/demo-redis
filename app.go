@@ -100,16 +100,18 @@ func NewApp() (AppProvider, error) {
 
 	// Configure the endpoints with their handlers and middlewares.
 	router := apiService.SetupRoutes(httprouter.New(), &middlewares)
+	// Wrap the router with the default http timeout handler.
+	routerWithTimeout := http.TimeoutHandler(
+		router,
+		config.Server.RequestTimeout,
+		"Timeout. Processing taking too long. Please reach out to support.")
 
 	// Start the api server.
 	srv := &http.Server{
 		ReadTimeout:  config.Server.ReadTimeout,
 		WriteTimeout: config.Server.WriteTimeout,
 		Addr:         fmt.Sprintf("%s:%s", config.Server.Host, config.Server.Port),
-		Handler: http.TimeoutHandler(
-			router,
-			config.Server.RequestTimeout,
-			"Timeout. Processing taking too long. Please reach out to support."),
+		Handler:      routerWithTimeout,
 	}
 
 	return &App{
