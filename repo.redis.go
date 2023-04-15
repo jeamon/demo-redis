@@ -99,7 +99,7 @@ func (r *redisBookStorage) GetAll(ctx context.Context) ([]Book, error) {
 		var book Book
 		if err = json.Unmarshal([]byte(bookJSONString), &book); err != nil {
 			r.logger.Error("failed to unmarshall details of book",
-				zap.String("requestid", GetValueFromContext(ctx, ContextRequestID)),
+				zap.String("request.id", GetValueFromContext(ctx, ContextRequestID)),
 				zap.Error(err),
 			)
 			continue
