@@ -109,10 +109,11 @@ func NewApp() (AppProvider, error) {
 
 	// Build the api server definition.
 	srv := &http.Server{
-		ReadTimeout:  config.Server.ReadTimeout,
-		WriteTimeout: config.Server.WriteTimeout,
-		Addr:         fmt.Sprintf("%s:%s", config.Server.Host, config.Server.Port),
-		Handler:      routerWithTimeout,
+		Addr:           fmt.Sprintf("%s:%s", config.Server.Host, config.Server.Port),
+		Handler:        routerWithTimeout,
+		ReadTimeout:    config.Server.ReadTimeout,
+		WriteTimeout:   config.Server.WriteTimeout,
+		MaxHeaderBytes: 1 << 20, // Max headers size : 1MB
 	}
 
 	return &App{
