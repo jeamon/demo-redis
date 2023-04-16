@@ -22,9 +22,11 @@ func (api *APIHandler) DurationMiddleware(next httprouter.Handle) httprouter.Han
 	return func(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		logger := api.GetLoggerFromContext(r.Context())
 		start := time.Now()
-		next(w, r, ps)
+		nw := NewCustomResponseWriter(w)
+		next(nw, r, ps)
 		logger.Info(
 			"request",
+			zap.Int("request.status", nw.statusCode),
 			zap.Duration("request.duration", time.Since(start)),
 		)
 	}
