@@ -141,8 +141,8 @@ func (app *App) Run() error {
 
 	err := g.Wait()
 	app.logger.Info("api server stopped",
-		zap.String("host", app.config.Server.Host),
-		zap.String("port", app.config.Server.Port),
+		zap.String("app.host", app.config.Server.Host),
+		zap.String("app.port", app.config.Server.Port),
 		zap.Error(err),
 	)
 	return err
@@ -160,8 +160,8 @@ func (app *App) Clean() {
 func (app *App) Serve() func() error {
 	return func() error {
 		app.logger.Info("api server starting",
-			zap.String("host", app.config.Server.Host),
-			zap.String("port", app.config.Server.Port),
+			zap.String("app.host", app.config.Server.Host),
+			zap.String("app.port", app.config.Server.Port),
 		)
 		err := app.server.ListenAndServe()
 		if err == http.ErrServerClosed {
