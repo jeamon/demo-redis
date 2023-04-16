@@ -47,7 +47,7 @@ func SetupLogging(config *Config, logFile *os.File) (*zap.Logger, func()) {
 			zapcore.NewCore(consoleEncoder, zapcore.AddSync(os.Stdout), config.LogLevel))
 		logger = zap.New(zapCore, zap.AddCaller(), zap.AddStacktrace(zapcore.ErrorLevel))
 	}
-	logger = logger.With(zap.String("commit", config.GitCommit), zap.String("tag", config.GitTag), zap.String("built", config.BuildTime))
+	logger = logger.With(zap.String("app.commit", config.GitCommit), zap.String("app.tag", config.GitTag), zap.String("app.built", config.BuildTime))
 
 	flusher := func() {
 		if err := logger.Sync(); err != nil {
