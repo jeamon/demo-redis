@@ -53,6 +53,18 @@ func (api *APIHandler) AddLoggerMiddleware(next httprouter.Handle) httprouter.Ha
 	}
 }
 
+// MaintenanceModeMiddleware responds to client with maintenance message along with 503 code
+// when the app field `Mode.enabled` is set to true. Otherwise it forwards the request.
+func (api *APIHandler) MaintenanceModeMiddleware(next httprouter.Handle) httprouter.Handle {
+	return func(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+		if api.mode.enabled.Load() {
+			api.Maintenance(w, r, httprouter.Params{httprouter.Param{"status", "none"}})
+			return
+		}
+		next(w, r, ps)
+	}
+}
+
 // RequestsCounterMiddleware increments the number of received requests statistics and add this
 // new value to the request context to be used during logging as `request.num` field.
 func (api *APIHandler) RequestsCounterMiddleware(next httprouter.Handle) httprouter.Handle {
