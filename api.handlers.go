@@ -20,11 +20,19 @@ type Statistics struct {
 	started time.Time
 }
 
+// Maintenance holds app maintenance mode infos.
+type Maintenance struct {
+	enabled atomic.Bool
+	message string
+	started time.Time
+}
+
 // APIHandler defines the API handler.
 type APIHandler struct {
 	logger      *zap.Logger
 	config      *Config
 	stats       *Statistics
+	mode        *Maintenance
 	bookService BookServiceProvider
 }
 
@@ -50,6 +58,53 @@ func (api *APIHandler) Status(w http.ResponseWriter, r *http.Request, _ httprout
 		},
 	); err != nil {
 		api.logger.Error("failed to send status response", zap.String("request.id", requestID), zap.Error(err))
+	}
+}
+
+// Maintenance handles request to enable or disable the maintenance mode of the service and respond
+// to client requests with predefined message when the service is in maintenance mode.
+func (api *APIHandler) Maintenance(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	requestID := GetValueFromContext(r.Context(), ContextRequestID)
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	var response map[string]interface{}
+	var logger *zap.Logger
+	s := ps.ByName("status")
+	switch s {
+	case "enable":
+		api.mode.message = ps.ByName("message")
+		api.mode.started = time.Now()
+		api.mode.enabled.Store(true)
+		response = map[string]interface{}{
+			"requestid":           requestID,
+			"maintenance.started": api.mode.started.Format(time.RFC1123),
+			"maintenance.message": api.mode.message,
+			"message":             "Maintenance mode enabled successfully.",
+		}
+		logger = api.logger.With(zap.String("request.id", requestID))
+
+	case "disable":
+		api.mode.enabled.Store(false)
+		api.mode.started = time.Time{}
+		api.mode.message = ""
+		response = map[string]interface{}{
+			"requestid": requestID,
+			"message":   "Maintenance mode disabled successfully.",
+		}
+		logger = api.logger.With(zap.String("request.id", requestID))
+
+	case "show":
+		response = map[string]interface{}{
+			"enabled.at": api.mode.message,
+			"message":    api.mode.message,
+		}
+		w.WriteHeader(http.StatusServiceUnavailable)
+	}
+
+	if err := json.NewEncoder(w).Encode(response); err != nil {
+		logger.Error("failed to send maintenance response",
+			zap.String("request.maintenance", s),
+			zap.Error(err),
+		)
 	}
 }
 
