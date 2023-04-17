@@ -38,7 +38,9 @@ type APIHandler struct {
 
 // NewAPIHandler provides a new instance of APIHandler.
 func NewAPIHandler(logger *zap.Logger, config *Config, stats *Statistics, bs BookServiceProvider) *APIHandler {
-	return &APIHandler{logger: logger, config: config, stats: stats, bookService: bs}
+	m := &Maintenance{}
+	m.enabled.Store(false)
+	return &APIHandler{logger: logger, config: config, stats: stats, mode: m, bookService: bs}
 }
 
 // Index provides same details like `Status` handler by redirecting the request.
@@ -68,10 +70,16 @@ func (api *APIHandler) Maintenance(w http.ResponseWriter, r *http.Request, ps ht
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	var response map[string]interface{}
 	var logger *zap.Logger
-	s := ps.ByName("status")
-	switch s {
+
+	q := r.URL.Query()
+	mstatus := "show"
+	if ps.ByName("status") != mstatus {
+		mstatus = q.Get("status")
+	}
+
+	switch mstatus {
 	case "enable":
-		api.mode.message = ps.ByName("message")
+		api.mode.message = q.Get("message")
 		api.mode.started = time.Now()
 		api.mode.enabled.Store(true)
 		response = map[string]interface{}{
@@ -94,15 +102,16 @@ func (api *APIHandler) Maintenance(w http.ResponseWriter, r *http.Request, ps ht
 
 	case "show":
 		response = map[string]interface{}{
-			"enabled.at": api.mode.message,
-			"message":    api.mode.message,
+			"message": "service currently unvailable.",
+			"reason":  api.mode.message,
+			"since":   api.mode.started.UTC().Format(time.RFC1123),
 		}
 		w.WriteHeader(http.StatusServiceUnavailable)
 	}
 
 	if err := json.NewEncoder(w).Encode(response); err != nil {
 		logger.Error("failed to send maintenance response",
-			zap.String("request.maintenance", s),
+			zap.String("request.maintenance", mstatus),
 			zap.Error(err),
 		)
 	}
