@@ -65,6 +65,8 @@ func (api *APIHandler) Status(w http.ResponseWriter, r *http.Request, _ httprout
 
 // Maintenance handles request to enable or disable the maintenance mode of the service and respond
 // to client requests with predefined message when the service is in maintenance mode.
+// Enable the maintenance mode : /ops/maintenance?status=enable&msg=message-to-be-displayed-to-users
+// Disable the maintenance mode: /ops/maintenance?status=disable
 func (api *APIHandler) Maintenance(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	requestID := GetValueFromContext(r.Context(), ContextRequestID)
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
@@ -79,7 +81,7 @@ func (api *APIHandler) Maintenance(w http.ResponseWriter, r *http.Request, ps ht
 
 	switch mstatus {
 	case "enable":
-		api.mode.message = q.Get("message")
+		api.mode.message = q.Get("msg")
 		api.mode.started = time.Now()
 		api.mode.enabled.Store(true)
 		response = map[string]interface{}{
