@@ -89,8 +89,8 @@ func NewApp() (AppProvider, error) {
 		apiService.stats.version = config.GitCommit
 	}
 
-	// Build the stack of middlewares.
-	middlewares := Middlewares{
+	// Build the map of middlewares stack.
+	middlewaresPublic := Middlewares{
 		apiService.PanicRecoveryMiddleware,
 		apiService.MaintenanceModeMiddleware,
 		apiService.RequestsCounterMiddleware,
@@ -100,8 +100,22 @@ func NewApp() (AppProvider, error) {
 		apiService.DurationMiddleware,
 	}
 
+	middlewaresOps := Middlewares{
+		apiService.PanicRecoveryMiddleware,
+		apiService.RequestsCounterMiddleware,
+		apiService.RequestIDMiddleware,
+		apiService.AddLoggerMiddleware,
+		CORSMiddleware,
+		apiService.DurationMiddleware,
+	}
+
 	// Configure the endpoints with their handlers and middlewares.
-	router := apiService.SetupRoutes(httprouter.New(), &middlewares)
+	router := apiService.SetupRoutes(httprouter.New(),
+		&MiddlewareMap{
+			public: &middlewaresPublic,
+			ops:    &middlewaresOps,
+		},
+	)
 	// Wrap the router with the default http timeout handler.
 	routerWithTimeout := http.TimeoutHandler(
 		router,
