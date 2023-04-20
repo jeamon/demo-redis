@@ -31,10 +31,10 @@ server:
 redis:
   host: "db.demo.redis"
   port: "6379"
-  dial_timeout: 30
-  read_timeout: 30
+  dial_timeout: 30s
+  read_timeout: 30s
   pool_size: 10
-  pool_timeout: 30
+  pool_timeout: 30s
   username: ""
   password: "<secret>"
   db_index: 1

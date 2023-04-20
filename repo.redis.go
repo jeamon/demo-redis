@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"time"
 
 	"github.com/go-redis/redis/v9"
 	"go.uber.org/zap"
@@ -29,11 +28,11 @@ func NewRedisBookStorage(logger *zap.Logger, client *redis.Client) BookStorage {
 func GetRedisClient(config *Config) (*redis.Client, error) {
 	client := redis.NewClient(&redis.Options{
 		Addr:         fmt.Sprintf("%s:%s", config.Redis.Host, config.Redis.Port),
-		DialTimeout:  time.Duration(config.Redis.DialTimeout) * time.Second,
-		ReadTimeout:  time.Duration(config.Redis.ReadTimeout) * time.Second,
-		WriteTimeout: time.Duration(config.Redis.WriteTimeout) * time.Second,
+		DialTimeout:  config.Redis.DialTimeout,
+		ReadTimeout:  config.Redis.ReadTimeout,
+		WriteTimeout: config.Redis.WriteTimeout,
 		PoolSize:     config.Redis.PoolSize,
-		PoolTimeout:  time.Duration(config.Redis.PoolTimeout) * time.Second,
+		PoolTimeout:  config.Redis.PoolTimeout,
 		Password:     config.Redis.Password,
 		Username:     config.Redis.Username,
 		DB:           config.Redis.DatabaseIndex,

@@ -26,21 +26,21 @@ type Config struct {
 		KeyFile         string        `yaml:"key_file", envconfig:"DRAP_SERVER_KEY_FILE"`
 		ReadTimeout     time.Duration `yaml:"read_timeout", envconfig:"DRAP_SERVER_READ_TIMEOUT"`
 		WriteTimeout    time.Duration `yaml:"write_timeout", envconfig:"DRAP_SERVER_WRITE_TIMEOUT"`
-		RequestTimeout  time.Duration `yaml:"request_timeout", envconfig:"DRAP_SERVER_REQUEST_TIMEOUT"`
+		RequestTimeout  time.Duration `yaml:"request_timeout", envconfig:"DRAP_SERVER_REQUEST_TIMEOUT"` // Time to wait for a request to finish
 		ShutdownTimeout time.Duration `yaml:"shutdown_timeout", envconfig:"DRAP_SERVER_SHUTDOWN_TIMEOUT"`
 	} `yaml:"server"`
 
 	Redis struct {
-		Host          string `yaml:"host", envconfig:"DRAP_REDIS_HOST"`
-		Port          string `yaml:"port", envconfig:"DRAP_REDIS_PORT"`
-		DialTimeout   int    `yaml:"dial_timeout", envconfig:"DRAP_REDIS_DIAL_TIMEOUT"`
-		ReadTimeout   int    `yaml:"read_timeout", envconfig:"DRAP_REDIS_READ_TIMEOUT"`
-		WriteTimeout  int    `yaml:"write_timeout", envconfig:"DRAP_REDIS_WRITE_TIMEOUT"`
-		PoolSize      int    `yaml:"pool_size", envconfig:"DRAP_REDIS_POOL_SIZE"`
-		PoolTimeout   int    `yaml:"pool_timeout", envconfig:"DRAP_REDIS_POOL_TIMEOUT"`
-		Username      string `yaml:"username", envconfig:"DRAP_REDIS_USERNAME"`
-		Password      string `yaml:"password", envconfig:"DRAP_REDIS_PASSWORD"`
-		DatabaseIndex int    `yaml:"db_index", envconfig:"DRAP_REDIS_DATABASE_INDEX"`
+		Host          string        `yaml:"host", envconfig:"DRAP_REDIS_HOST"`
+		Port          string        `yaml:"port", envconfig:"DRAP_REDIS_PORT"`
+		DialTimeout   time.Duration `yaml:"dial_timeout", envconfig:"DRAP_REDIS_DIAL_TIMEOUT"`
+		ReadTimeout   time.Duration `yaml:"read_timeout", envconfig:"DRAP_REDIS_READ_TIMEOUT"`
+		WriteTimeout  time.Duration `yaml:"write_timeout", envconfig:"DRAP_REDIS_WRITE_TIMEOUT"`
+		PoolSize      int           `yaml:"pool_size", envconfig:"DRAP_REDIS_POOL_SIZE"`
+		PoolTimeout   time.Duration `yaml:"pool_timeout", envconfig:"DRAP_REDIS_POOL_TIMEOUT"`
+		Username      string        `yaml:"username", envconfig:"DRAP_REDIS_USERNAME"`
+		Password      string        `yaml:"password", envconfig:"DRAP_REDIS_PASSWORD"`
+		DatabaseIndex int           `yaml:"db_index", envconfig:"DRAP_REDIS_DATABASE_INDEX"`
 	} `yaml:"redis"`
 }
 
