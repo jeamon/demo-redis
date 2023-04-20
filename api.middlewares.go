@@ -17,6 +17,13 @@ type MiddlewareFunc func(httprouter.Handle) httprouter.Handle
 // middleware functions used to build a single chain.
 type Middlewares []MiddlewareFunc
 
+// MiddlewareMap contains middlwares chain to
+// use for public-facing and ops requests.
+type MiddlewareMap struct {
+	public MiddlewareFunc
+	ops    MiddlewareFunc
+}
+
 // DurationMiddleware provides log with processing duration for each request.
 func (api *APIHandler) DurationMiddleware(next httprouter.Handle) httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {

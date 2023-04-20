@@ -112,8 +112,8 @@ func NewApp() (AppProvider, error) {
 	// Configure the endpoints with their handlers and middlewares.
 	router := apiService.SetupRoutes(httprouter.New(),
 		&MiddlewareMap{
-			public: &middlewaresPublic,
-			ops:    &middlewaresOps,
+			public: (&middlewaresPublic).Chain,
+			ops:    (&middlewaresOps).Chain,
 		},
 	)
 	// Wrap the router with the default http timeout handler.
