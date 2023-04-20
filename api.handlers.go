@@ -125,12 +125,16 @@ func (api *APIHandler) GetStatistics(w http.ResponseWriter, r *http.Request, _ h
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	if err := json.NewEncoder(w).Encode(
 		map[string]interface{}{
-			"requestid":   requestID,
-			"version":     api.stats.version,
-			"called":      atomic.LoadUint64(&api.stats.called),
-			"started":     api.stats.started.Format(time.RFC1123),
-			"uptime":      fmt.Sprintf("%.0f mins", time.Since(api.stats.started).Minutes()),
-			"maintenance": api.mode,
+			"requestid": requestID,
+			"version":   api.stats.version,
+			"called":    atomic.LoadUint64(&api.stats.called),
+			"started":   api.stats.started.Format(time.RFC1123),
+			"uptime":    fmt.Sprintf("%.0f mins", time.Since(api.stats.started).Minutes()),
+			"maintenance": map[string]interface{}{
+				"enabled": api.mode.enabled.Load(),
+				"started": api.mode.started,
+				"message": api.mode.message,
+			},
 		},
 	); err != nil {
 		api.logger.Error("failed to send statistics response", zap.String("request.id", requestID), zap.Error(err))
