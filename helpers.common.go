@@ -11,9 +11,7 @@ import (
 	"github.com/gofrs/uuid"
 )
 
-var (
-	ErrNotFoundBook = errors.New("book not found")
-)
+var ErrNotFoundBook = errors.New("book not found")
 
 type (
 	ContextKey        string
