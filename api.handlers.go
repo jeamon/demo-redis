@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"sync"
 	"sync/atomic"
 	"time"
 
@@ -18,6 +19,8 @@ type Statistics struct {
 	version string
 	called  uint64
 	started time.Time
+	status  map[int]uint64
+	mu      *sync.RWMutex
 }
 
 // Maintenance holds app maintenance mode infos.
@@ -40,6 +43,8 @@ type APIHandler struct {
 func NewAPIHandler(logger *zap.Logger, config *Config, stats *Statistics, bs BookServiceProvider) *APIHandler {
 	m := &Maintenance{}
 	m.enabled.Store(false)
+	stats.status = make(map[int]uint64)
+	stats.mu = &sync.RWMutex{}
 	return &APIHandler{logger: logger, config: config, stats: stats, mode: m, bookService: bs}
 }
 
@@ -119,10 +124,13 @@ func (api *APIHandler) Maintenance(w http.ResponseWriter, r *http.Request, ps ht
 	}
 }
 
-// GetStatistics provides useful details about the application to the internal users.
+// GetStatistics provides useful details about the application to the internal ops users.
 func (api *APIHandler) GetStatistics(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	requestID := GetValueFromContext(r.Context(), ContextRequestID)
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	api.stats.mu.RLock()
+	statusMap := api.stats.status
+	api.stats.mu.RUnlock()
 	if err := json.NewEncoder(w).Encode(
 		map[string]interface{}{
 			"requestid": requestID,
@@ -135,6 +143,7 @@ func (api *APIHandler) GetStatistics(w http.ResponseWriter, r *http.Request, _ h
 				"started": api.mode.started,
 				"message": api.mode.message,
 			},
+			"status": statusMap,
 		},
 	); err != nil {
 		api.logger.Error("failed to send statistics response", zap.String("request.id", requestID), zap.Error(err))
