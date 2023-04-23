@@ -24,7 +24,8 @@ type MiddlewareMap struct {
 	ops    MiddlewareFunc
 }
 
-// DurationMiddleware provides log with processing duration for each request.
+// DurationMiddleware is a middleware that logs the duration it takes to handle each request,
+// then update the number of http status codes returned for internal ops statistics purposes.
 func (api *APIHandler) DurationMiddleware(next httprouter.Handle) httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		logger := api.GetLoggerFromContext(r.Context())
@@ -36,6 +37,13 @@ func (api *APIHandler) DurationMiddleware(next httprouter.Handle) httprouter.Han
 			zap.Int("request.status", nw.statusCode),
 			zap.Duration("request.duration", time.Since(start)),
 		)
+		api.stats.mu.Lock()
+		if num, found := api.stats.status[nw.statusCode]; !found {
+			api.stats.status[nw.statusCode] = 1
+		} else {
+			api.stats.status[nw.statusCode] = num + 1
+		}
+		api.stats.mu.Unlock()
 	}
 }
 
