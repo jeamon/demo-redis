@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"runtime"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -133,11 +134,13 @@ func (api *APIHandler) GetStatistics(w http.ResponseWriter, r *http.Request, _ h
 	api.stats.mu.RUnlock()
 	if err := json.NewEncoder(w).Encode(
 		map[string]interface{}{
-			"requestid": requestID,
-			"version":   api.stats.version,
-			"called":    atomic.LoadUint64(&api.stats.called),
-			"started":   api.stats.started.Format(time.RFC1123),
-			"uptime":    fmt.Sprintf("%.0f mins", time.Since(api.stats.started).Minutes()),
+			"requestid":    requestID,
+			"app.version":  api.stats.version,
+			"app.platform": runtime.GOOS,
+			"go.version":   runtime.Version(),
+			"called":       atomic.LoadUint64(&api.stats.called),
+			"started":      api.stats.started.Format(time.RFC1123),
+			"uptime":       fmt.Sprintf("%.0f mins", time.Since(api.stats.started).Minutes()),
 			"maintenance": map[string]interface{}{
 				"enabled": api.mode.enabled.Load(),
 				"started": api.mode.started,
