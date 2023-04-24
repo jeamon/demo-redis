@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/signal"
 	"path/filepath"
+	"runtime"
 	"syscall"
 	"time"
 
@@ -80,7 +81,12 @@ func NewApp() (AppProvider, error) {
 	apiService := NewAPIHandler(
 		logger,
 		config,
-		&Statistics{version: config.GitTag, started: time.Now()},
+		&Statistics{
+			version:  config.GitTag,
+			started:  time.Now(),
+			runtime:  runtime.Version(),
+			platform: runtime.GOOS + "/" + runtime.GOARCH,
+		},
 		bookService,
 	)
 
