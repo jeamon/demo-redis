@@ -6,6 +6,7 @@ import (
 	"errors"
 	"net"
 	"net/http"
+	"os"
 	"strings"
 
 	"github.com/gofrs/uuid"
@@ -128,4 +129,14 @@ func GetRequestSourceIP(r *http.Request) string {
 		return ip
 	}
 	return ""
+}
+
+// IsAppRunningInDocker checks the existence of the .dockerenv
+// file at the root directory and returns a boolean result. This
+// helps know if the App is running in a docker container or not.
+func IsAppRunningInDocker() bool {
+	if _, err := os.Stat("/.dockerenv"); err == nil {
+		return true
+	}
+	return false
 }
