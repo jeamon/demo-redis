@@ -128,20 +128,20 @@ func (api *APIHandler) Maintenance(w http.ResponseWriter, r *http.Request, ps ht
 }
 
 // GetStatistics provides useful details about the application to the internal ops users.
+// The stats returns by this handler do not contain the ops request which triggered that.
+// That is why we remove 1 from the called field value in order to match the status stats.
 func (api *APIHandler) GetStatistics(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	requestID := GetValueFromContext(r.Context(), ContextRequestID)
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	api.stats.mu.RLock()
-	statusMap := api.stats.status
-	api.stats.mu.RUnlock()
-	if err := json.NewEncoder(w).Encode(
+	err := json.NewEncoder(w).Encode(
 		map[string]interface{}{
 			"requestid":     requestID,
 			"app.version":   api.stats.version,
 			"app.container": api.stats.container,
 			"app.platform":  api.stats.platform,
 			"go.version":    api.stats.runtime,
-			"called":        atomic.LoadUint64(&api.stats.called),
+			"called":        atomic.LoadUint64(&api.stats.called) - 1,
 			"started":       api.stats.started.Format(time.RFC1123),
 			"uptime":        fmt.Sprintf("%.0f mins", time.Since(api.stats.started).Minutes()),
 			"maintenance": map[string]interface{}{
@@ -149,9 +149,11 @@ func (api *APIHandler) GetStatistics(w http.ResponseWriter, r *http.Request, _ h
 				"started": api.mode.started,
 				"message": api.mode.message,
 			},
-			"status": statusMap,
+			"status": api.stats.status,
 		},
-	); err != nil {
+	)
+	api.stats.mu.RUnlock()
+	if err != nil {
 		api.logger.Error("failed to send statistics response", zap.String("request.id", requestID), zap.Error(err))
 	}
 }
