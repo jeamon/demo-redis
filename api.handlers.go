@@ -141,7 +141,7 @@ func (api *APIHandler) GetStatistics(w http.ResponseWriter, r *http.Request, _ h
 			"app.container": api.stats.container,
 			"app.platform":  api.stats.platform,
 			"go.version":    api.stats.runtime,
-			"called":        atomic.LoadUint64(&api.stats.called) + 1,
+			"called":        atomic.LoadUint64(&api.stats.called),
 			"started":       api.stats.started.Format(time.RFC1123),
 			"uptime":        fmt.Sprintf("%.0f mins", time.Since(api.stats.started).Minutes()),
 			"maintenance": map[string]interface{}{
