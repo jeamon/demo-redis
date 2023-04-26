@@ -82,10 +82,11 @@ func NewApp() (AppProvider, error) {
 		logger,
 		config,
 		&Statistics{
-			version:  config.GitTag,
-			started:  time.Now(),
-			runtime:  runtime.Version(),
-			platform: runtime.GOOS + "/" + runtime.GOARCH,
+			version:   config.GitTag,
+			container: IsAppRunningInDocker(),
+			started:   time.Now(),
+			runtime:   runtime.Version(),
+			platform:  runtime.GOOS + "/" + runtime.GOARCH,
 		},
 		bookService,
 	)

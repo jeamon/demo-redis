@@ -16,13 +16,14 @@ var EmptyData = struct{}{}
 
 // Statistics holds app stats for ops.
 type Statistics struct {
-	version  string
-	runtime  string
-	platform string
-	called   uint64
-	started  time.Time
-	status   map[int]uint64
-	mu       *sync.RWMutex
+	version   string
+	container bool
+	runtime   string
+	platform  string
+	called    uint64
+	started   time.Time
+	status    map[int]uint64
+	mu        *sync.RWMutex
 }
 
 // Maintenance holds app maintenance mode infos.
@@ -135,13 +136,14 @@ func (api *APIHandler) GetStatistics(w http.ResponseWriter, r *http.Request, _ h
 	api.stats.mu.RUnlock()
 	if err := json.NewEncoder(w).Encode(
 		map[string]interface{}{
-			"requestid":    requestID,
-			"app.version":  api.stats.version,
-			"app.platform": api.stats.platform,
-			"go.version":   api.stats.runtime,
-			"called":       atomic.LoadUint64(&api.stats.called),
-			"started":      api.stats.started.Format(time.RFC1123),
-			"uptime":       fmt.Sprintf("%.0f mins", time.Since(api.stats.started).Minutes()),
+			"requestid":     requestID,
+			"app.version":   api.stats.version,
+			"app.container": api.stats.container,
+			"app.platform":  api.stats.platform,
+			"go.version":    api.stats.runtime,
+			"called":        atomic.LoadUint64(&api.stats.called),
+			"started":       api.stats.started.Format(time.RFC1123),
+			"uptime":        fmt.Sprintf("%.0f mins", time.Since(api.stats.started).Minutes()),
 			"maintenance": map[string]interface{}{
 				"enabled": api.mode.enabled.Load(),
 				"started": api.mode.started,
