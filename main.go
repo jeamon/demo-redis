@@ -4,12 +4,6 @@ import (
 	"log"
 )
 
-var (
-	GitCommit string
-	GitTag    string
-	BuildTime string
-)
-
 func main() {
 	app, err := NewApp()
 	if err != nil {
