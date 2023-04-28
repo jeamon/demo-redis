@@ -2,8 +2,10 @@ package main
 
 import (
 	"encoding/json"
+	"expvar"
 	"fmt"
 	"net/http"
+	"runtime"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -125,6 +127,15 @@ func (api *APIHandler) Maintenance(w http.ResponseWriter, r *http.Request, ps ht
 			zap.Error(err),
 		)
 	}
+}
+
+// export goroutines to be used by expvar handler.
+var goroutines = expvar.NewInt("goroutines")
+
+// GetVars returns memory statistics with number of goroutines in json.
+func GetVars(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	goroutines.Set(int64(runtime.NumGoroutine()))
+	expvar.Handler().ServeHTTP(w, r)
 }
 
 // GetStatistics provides useful details about the application to the internal ops users.
