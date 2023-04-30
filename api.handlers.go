@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"runtime"
+	"runtime/debug"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -136,6 +137,17 @@ var goroutines = expvar.NewInt("goroutines")
 func GetVars(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	goroutines.Set(int64(runtime.NumGoroutine()))
 	expvar.Handler().ServeHTTP(w, r)
+}
+
+// RunGC forces the run of the garbage collector asynchronously.
+func RunGC(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	go runtime.GC()
+}
+
+// FreeOSMemory forces the garbage collector to and tries to returns the memory
+// back to the operating system in an asynchronous fashion.
+func FreeOSMemory(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	go debug.FreeOSMemory()
 }
 
 // GetStatistics provides useful details about the application to the internal ops users.
