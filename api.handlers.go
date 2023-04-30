@@ -140,14 +140,32 @@ func GetVars(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 }
 
 // RunGC forces the run of the garbage collector asynchronously.
-func RunGC(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+func (api *APIHandler) RunGC(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	requestID := GetValueFromContext(r.Context(), ContextRequestID)
 	go runtime.GC()
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	if err := json.NewEncoder(w).Encode(
+		map[string]string{
+			"called": "go runtime.GC()",
+		},
+	); err != nil {
+		api.logger.Error("failed to send run gc response", zap.String("request.id", requestID), zap.Error(err))
+	}
 }
 
 // FreeOSMemory forces the garbage collector to and tries to returns the memory
 // back to the operating system in an asynchronous fashion.
-func FreeOSMemory(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+func (api *APIHandler) FreeOSMemory(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	requestID := GetValueFromContext(r.Context(), ContextRequestID)
 	go debug.FreeOSMemory()
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	if err := json.NewEncoder(w).Encode(
+		map[string]string{
+			"called": "go debug.FreeOSMemory()",
+		},
+	); err != nil {
+		api.logger.Error("failed to send free os memory response", zap.String("request.id", requestID), zap.Error(err))
+	}
 }
 
 // GetStatistics provides useful details about the application to the internal ops users.
