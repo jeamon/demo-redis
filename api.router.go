@@ -20,7 +20,7 @@ func (api *APIHandler) SetupRoutes(router *httprouter.Router, m *MiddlewareMap) 
 	router.GET("/ops/stats", m.ops(api.GetStatistics))
 	router.GET("/ops/maintenance", m.ops(api.Maintenance))
 
-	router.GET("/ops/debug/vars", m.ops(GetVars))
+	router.GET("/ops/debug/vars", m.ops(GetMemStats))
 	router.GET("/ops/debug/gc", m.ops(api.RunGC))
 	router.GET("/ops/debug/fos", m.ops(api.FreeOSMemory))
 
