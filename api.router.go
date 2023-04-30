@@ -22,7 +22,7 @@ func (api *APIHandler) SetupRoutes(router *httprouter.Router, m *MiddlewareMap) 
 
 	router.GET("/ops/debug/vars", m.ops(GetVars))
 	router.GET("/ops/debug/gc", m.ops(RunGC))
-	router.GET("/ops/debug/gc", m.ops(FreeOSMemory))
+	router.GET("/ops/debug/fos", m.ops(FreeOSMemory))
 
 	return router
 }
