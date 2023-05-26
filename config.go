@@ -12,12 +12,13 @@ import (
 
 // Config defines the structure of the configuration file.
 type Config struct {
-	GitCommit    string        `yaml:"git_commit", envconfig:"DRAP_GIT_COMMIT"`
-	GitTag       string        `yaml:"git_tag", envconfig:"DRAP_GIT_TAG"`
-	BuildTime    string        `yaml:"build_time", envconfig:"DRAP_BUILD_TIME"`
-	IsProduction bool          `yaml:"is_production", envconfig:"DRAP_IS_PRODUCTION"`
-	LogLevel     zapcore.Level `yaml:"log_level", envconfig:"DRAP_LOG_LEVEL"`
-	LogFile      string        `yaml:"log_file", envconfig:"DRAP_LOG_FILE"`
+	GitCommit      string        `yaml:"git_commit", envconfig:"DRAP_GIT_COMMIT"`
+	GitTag         string        `yaml:"git_tag", envconfig:"DRAP_GIT_TAG"`
+	BuildTime      string        `yaml:"build_time", envconfig:"DRAP_BUILD_TIME"`
+	IsProduction   bool          `yaml:"is_production", envconfig:"DRAP_IS_PRODUCTION"`
+	LogLevel       zapcore.Level `yaml:"log_level", envconfig:"DRAP_LOG_LEVEL"`
+	LogFile        string        `yaml:"log_file", envconfig:"DRAP_LOG_FILE"`
+	ProfilerEnable bool          `yaml:"profiler_enable", envconfig:"DRAP_PROFILER_ENABLE"`
 
 	Server struct {
 		Host            string        `yaml:"host", envconfig:"DRAP_SERVER_HOST"`

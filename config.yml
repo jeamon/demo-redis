@@ -16,6 +16,10 @@ git_commit: ""
 git_tag: ""
 build_time: ""
 
+# Determines the injection of http-based
+# pprof endpoints on the server.
+profiler_enabled: true
+
 # Api server settings
 server:
   host: "0.0.0.0"
