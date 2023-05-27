@@ -212,7 +212,7 @@ func (api *APIHandler) GetConfigs(w http.ResponseWriter, r *http.Request, _ http
 	}
 }
 
-func (api *APIHandler) CreateBook(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+func (api *APIHandler) CreateBook(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	book := Book{}
 	requestID := GetValueFromContext(r.Context(), ContextRequestID)
 	err := DecodeCreateOrUpdateBookRequestBody(r, &book)
@@ -345,7 +345,7 @@ func (api *APIHandler) DeleteOneBook(w http.ResponseWriter, r *http.Request, ps 
 	}
 }
 
-func (api *APIHandler) UpdateBook(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+func (api *APIHandler) UpdateBook(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	var book Book
 	requestID := GetValueFromContext(r.Context(), ContextRequestID)
 	err := DecodeCreateOrUpdateBookRequestBody(r, &book)
