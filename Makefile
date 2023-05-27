@@ -5,6 +5,7 @@ SHELL:= /usr/bin/bash -e
 BINDIR := $(CURDIR)/bin
 BINNAME ?= app.demo.redis
 GOLANGCI_LINT_VERSION:=1.52.0
+# Download the linter executable file from https://github.com/golangci/golangci-lint/releases/tag/v1.52.2
 
 GIT_COMMIT = $(shell git rev-parse HEAD)
 GIT_SHA    = $(shell git rev-parse --short HEAD)
@@ -47,6 +48,7 @@ install-linter: ## Install golangci-lint tool.
 .PHONY: lint
 lint: ## Updates modules and execute linters.
 	## use `make install-linter` to install linters if missing
+	## or download the executable file from https://github.com/golangci/golangci-lint/releases/
 	go mod tidy
 	golangci-lint -v run --skip-dirs bin
 
@@ -111,3 +113,8 @@ docker.stop: ## Stop all running services (app and redis)
 .PHONY: docker.down
 docker.down: ## Stop & Remove all services (app and redis) and network.
 	docker-compose down
+
+.PHONY: docker.clean
+docker.clean: ## Stop & Remove all app containers (without the volume) and delete the images.
+	@docker rm -f $(docker ps -aq --filter "name=app.demo.redis")
+	@docker rmi -f $(docker images -aq --filter="reference=app.demo.redis:*")
