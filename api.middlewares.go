@@ -73,7 +73,12 @@ func (api *APIHandler) AddLoggerMiddleware(next httprouter.Handle) httprouter.Ha
 func (api *APIHandler) MaintenanceModeMiddleware(next httprouter.Handle) httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		if api.mode.enabled.Load() {
-			api.Maintenance(w, r, httprouter.Params{httprouter.Param{"status", "show"}})
+			api.Maintenance(w, r, httprouter.Params{
+				httprouter.Param{
+					Key:   "status",
+					Value: "show",
+				},
+			})
 			return
 		}
 		next(w, r, ps)
