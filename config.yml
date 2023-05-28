@@ -18,7 +18,7 @@ build_time: ""
 
 # Determines the injection of http-based
 # pprof endpoints on the server.
-profiler_enabled: true
+profiler_enable: true
 
 # Api server settings
 server:
