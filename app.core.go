@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/go-redis/redis/v9"
+	"github.com/joho/godotenv"
 	"github.com/julienschmidt/httprouter"
 	"go.uber.org/zap"
 	"golang.org/x/sync/errgroup"
@@ -36,10 +37,16 @@ func NewApp() (AppProvider, error) {
 	var err error
 	var app *App
 
-	// Setup the configuration module.
+	// Setup the yaml configuration from file.
 	config, err := LoadConfigFile("./config.yml")
 	if err != nil {
 		return app, fmt.Errorf("failed to load configurations from file: %s", err)
+	}
+
+	// Set the environment configuration.
+	err = godotenv.Load("./config.env")
+	if err != nil {
+		return app, fmt.Errorf("failed to set environment configurations: %s", err)
 	}
 
 	// Use environment variables with prefix `DRAP`.
