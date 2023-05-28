@@ -28,7 +28,7 @@ func (api *APIHandler) SetupRoutes(router *httprouter.Router, m *MiddlewareMap) 
 	router.GET("/ops/debug/fos", m.ops(api.FreeOSMemory))
 
 	if api.config.ProfilerEnable {
-		router.GET("/ops/debug/pprof/*", func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+		router.GET("/ops/debug/pprof/", func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 			pprof.Index(w, r)
 		})
 		router.GET("/ops/debug/pprof/profile", func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
