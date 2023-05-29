@@ -46,18 +46,18 @@ func GetRedisClient(config *Config) (*redis.Client, error) {
 }
 
 // Add inserts a new book record.
-func (r *redisBookStorage) Add(ctx context.Context, id string, book Book) error {
+func (rs *redisBookStorage) Add(ctx context.Context, id string, book Book) error {
 	bookBytes, err := json.Marshal(book)
 	if err != nil {
 		return err
 	}
-	return r.client.HSet(ctx, HBooks, id, bookBytes).Err()
+	return rs.client.HSet(ctx, HBooks, id, bookBytes).Err()
 }
 
 // GetOne retrieves a book record based on its ID.
-func (r *redisBookStorage) GetOne(ctx context.Context, id string) (Book, error) {
+func (rs *redisBookStorage) GetOne(ctx context.Context, id string) (Book, error) {
 	var book Book
-	bookJSONString, err := r.client.HGet(ctx, HBooks, id).Result()
+	bookJSONString, err := rs.client.HGet(ctx, HBooks, id).Result()
 	if err == redis.Nil {
 		return book, ErrNotFoundBook
 	}
@@ -69,8 +69,8 @@ func (r *redisBookStorage) GetOne(ctx context.Context, id string) (Book, error) 
 }
 
 // Delete removes a book record based on its ID.
-func (r *redisBookStorage) Delete(ctx context.Context, id string) error {
-	err := r.client.HDel(ctx, HBooks, id).Err()
+func (rs *redisBookStorage) Delete(ctx context.Context, id string) error {
+	err := rs.client.HDel(ctx, HBooks, id).Err()
 	if err == redis.Nil {
 		return ErrNotFoundBook
 	}
@@ -78,18 +78,18 @@ func (r *redisBookStorage) Delete(ctx context.Context, id string) error {
 }
 
 // Update replaces existing book record data or inserts a new book if does not exist.
-func (r *redisBookStorage) Update(ctx context.Context, id string, book Book) (Book, error) {
+func (rs *redisBookStorage) Update(ctx context.Context, id string, book Book) (Book, error) {
 	bookBytes, err := json.Marshal(book)
 	if err != nil {
 		return book, err
 	}
-	err = r.client.HSet(ctx, HBooks, id, bookBytes).Err()
+	err = rs.client.HSet(ctx, HBooks, id, bookBytes).Err()
 	return book, err
 }
 
-// GetAll replaces existing book record data or inserts a new book if does not exist.
-func (r *redisBookStorage) GetAll(ctx context.Context) ([]Book, error) {
-	mapBooks, err := r.client.HVals(ctx, HBooks).Result()
+// GetAll retrieves a list of all books stored in the redis database.
+func (rs *redisBookStorage) GetAll(ctx context.Context) ([]Book, error) {
+	mapBooks, err := rs.client.HVals(ctx, HBooks).Result()
 	if err != nil {
 		return []Book{}, err
 	}
@@ -97,7 +97,7 @@ func (r *redisBookStorage) GetAll(ctx context.Context) ([]Book, error) {
 	for _, bookJSONString := range mapBooks {
 		var book Book
 		if err = json.Unmarshal([]byte(bookJSONString), &book); err != nil {
-			r.logger.Error("failed to unmarshall details of book",
+			rs.logger.Error("failed to unmarshall details of book",
 				zap.String("request.id", GetValueFromContext(ctx, ContextRequestID)),
 				zap.Error(err),
 			)
