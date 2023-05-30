@@ -43,6 +43,12 @@ type Config struct {
 		Password      string        `yaml:"password" envconfig:"DRAP_REDIS_PASSWORD"`
 		DatabaseIndex int           `yaml:"db_index" envconfig:"DRAP_REDIS_DATABASE_INDEX"`
 	} `yaml:"redis"`
+
+	BoltDB struct {
+		FilePath   string        `yaml:"filepath" envconfig:"DRAP_BOLTDB_FILE_PATH"`
+		Timeout    time.Duration `yaml:"timeout" envconfig:"DRAP_BOLTDB_TIMEOUT"`
+		BucketName string        `yaml:"bucket_name" envconfig:"DRAP_BOLTDB_BUCKET_NAME"`
+	} `yaml:"boltdb"`
 }
 
 // LoadConfigFile provides an instance of config structure for the all application.

@@ -42,3 +42,9 @@ redis:
   username: ""
   password: "<secret>"
   db_index: 1
+
+# BoltDB settings
+boltdb:
+  filepath: "./db.demo.bolt"
+  bucket_name: "books"
+  timeout: 5s
