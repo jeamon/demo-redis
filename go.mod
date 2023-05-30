@@ -3,6 +3,7 @@ module github.com/jeamon/demo-redis
 go 1.20
 
 require (
+	github.com/boltdb/bolt v1.3.1
 	github.com/joho/godotenv v1.5.1
 	go.uber.org/zap v1.23.0
 	gopkg.in/yaml.v3 v3.0.1
@@ -11,6 +12,7 @@ require (
 require (
 	github.com/cespare/xxhash/v2 v2.1.2 // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
+	golang.org/x/sys v0.0.0-20220422013727-9388b58f7150 // indirect
 )
 
 require (
