@@ -19,36 +19,39 @@ type Config struct {
 	LogLevel       zapcore.Level `yaml:"log_level" envconfig:"DRAP_LOG_LEVEL"`
 	LogFile        string        `yaml:"log_file" envconfig:"DRAP_LOG_FILE"`
 	ProfilerEnable bool          `yaml:"profiler_enable" envconfig:"DRAP_PROFILER_ENABLE"`
+	Server         Server        `yaml:"server"`
+	Redis          Redis         `yaml:"redis"`
+	BoltDB         BoltDB        `yaml:"boltdb"`
+}
 
-	Server struct {
-		Host            string        `yaml:"host" envconfig:"DRAP_SERVER_HOST"`
-		Port            string        `yaml:"port" envconfig:"DRAP_SERVER_PORT"`
-		CertsFile       string        `yaml:"certs_file" envconfig:"DRAP_SERVER_CERTS_FILE"`
-		KeyFile         string        `yaml:"key_file" envconfig:"DRAP_SERVER_KEY_FILE"`
-		ReadTimeout     time.Duration `yaml:"read_timeout" envconfig:"DRAP_SERVER_READ_TIMEOUT"`
-		WriteTimeout    time.Duration `yaml:"write_timeout" envconfig:"DRAP_SERVER_WRITE_TIMEOUT"`
-		RequestTimeout  time.Duration `yaml:"request_timeout" envconfig:"DRAP_SERVER_REQUEST_TIMEOUT"` // Time to wait for a request to finish
-		ShutdownTimeout time.Duration `yaml:"shutdown_timeout" envconfig:"DRAP_SERVER_SHUTDOWN_TIMEOUT"`
-	} `yaml:"server"`
+type Server struct {
+	Host            string        `yaml:"host" envconfig:"DRAP_SERVER_HOST"`
+	Port            string        `yaml:"port" envconfig:"DRAP_SERVER_PORT"`
+	CertsFile       string        `yaml:"certs_file" envconfig:"DRAP_SERVER_CERTS_FILE"`
+	KeyFile         string        `yaml:"key_file" envconfig:"DRAP_SERVER_KEY_FILE"`
+	ReadTimeout     time.Duration `yaml:"read_timeout" envconfig:"DRAP_SERVER_READ_TIMEOUT"`
+	WriteTimeout    time.Duration `yaml:"write_timeout" envconfig:"DRAP_SERVER_WRITE_TIMEOUT"`
+	RequestTimeout  time.Duration `yaml:"request_timeout" envconfig:"DRAP_SERVER_REQUEST_TIMEOUT"` // Time to wait for a request to finish
+	ShutdownTimeout time.Duration `yaml:"shutdown_timeout" envconfig:"DRAP_SERVER_SHUTDOWN_TIMEOUT"`
+}
 
-	Redis struct {
-		Host          string        `yaml:"host" envconfig:"DRAP_REDIS_HOST"`
-		Port          string        `yaml:"port" envconfig:"DRAP_REDIS_PORT"`
-		DialTimeout   time.Duration `yaml:"dial_timeout" envconfig:"DRAP_REDIS_DIAL_TIMEOUT"`
-		ReadTimeout   time.Duration `yaml:"read_timeout" envconfig:"DRAP_REDIS_READ_TIMEOUT"`
-		WriteTimeout  time.Duration `yaml:"write_timeout" envconfig:"DRAP_REDIS_WRITE_TIMEOUT"`
-		PoolSize      int           `yaml:"pool_size" envconfig:"DRAP_REDIS_POOL_SIZE"`
-		PoolTimeout   time.Duration `yaml:"pool_timeout" envconfig:"DRAP_REDIS_POOL_TIMEOUT"`
-		Username      string        `yaml:"username" envconfig:"DRAP_REDIS_USERNAME"`
-		Password      string        `yaml:"password" envconfig:"DRAP_REDIS_PASSWORD"`
-		DatabaseIndex int           `yaml:"db_index" envconfig:"DRAP_REDIS_DATABASE_INDEX"`
-	} `yaml:"redis"`
+type Redis struct {
+	Host          string        `yaml:"host" envconfig:"DRAP_REDIS_HOST"`
+	Port          string        `yaml:"port" envconfig:"DRAP_REDIS_PORT"`
+	DialTimeout   time.Duration `yaml:"dial_timeout" envconfig:"DRAP_REDIS_DIAL_TIMEOUT"`
+	ReadTimeout   time.Duration `yaml:"read_timeout" envconfig:"DRAP_REDIS_READ_TIMEOUT"`
+	WriteTimeout  time.Duration `yaml:"write_timeout" envconfig:"DRAP_REDIS_WRITE_TIMEOUT"`
+	PoolSize      int           `yaml:"pool_size" envconfig:"DRAP_REDIS_POOL_SIZE"`
+	PoolTimeout   time.Duration `yaml:"pool_timeout" envconfig:"DRAP_REDIS_POOL_TIMEOUT"`
+	Username      string        `yaml:"username" envconfig:"DRAP_REDIS_USERNAME"`
+	Password      string        `yaml:"password" envconfig:"DRAP_REDIS_PASSWORD"`
+	DatabaseIndex int           `yaml:"db_index" envconfig:"DRAP_REDIS_DATABASE_INDEX"`
+}
 
-	BoltDB struct {
-		FilePath   string        `yaml:"filepath" envconfig:"DRAP_BOLTDB_FILE_PATH"`
-		Timeout    time.Duration `yaml:"timeout" envconfig:"DRAP_BOLTDB_TIMEOUT"`
-		BucketName string        `yaml:"bucket_name" envconfig:"DRAP_BOLTDB_BUCKET_NAME"`
-	} `yaml:"boltdb"`
+type BoltDB struct {
+	FilePath   string        `yaml:"filepath" envconfig:"DRAP_BOLTDB_FILE_PATH"`
+	Timeout    time.Duration `yaml:"timeout" envconfig:"DRAP_BOLTDB_TIMEOUT"`
+	BucketName string        `yaml:"bucket_name" envconfig:"DRAP_BOLTDB_BUCKET_NAME"`
 }
 
 // LoadConfigFile provides an instance of config structure for the all application.
