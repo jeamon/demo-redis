@@ -10,9 +10,9 @@ import (
 )
 
 type boltBookStorage struct {
-	logger     *zap.Logger
-	client     *bolt.DB
-	bucketName string
+	logger *zap.Logger
+	client *bolt.DB
+	config *BoltDB
 }
 
 // GetBoltClient setup the database and the bucket then provides a ready to use client.
@@ -34,12 +34,17 @@ func GetBoltDBClient(config *Config) (*bolt.DB, error) {
 }
 
 // NewBoltBookStorage provides an instance of bolt-based book storage.
-func NewBoltBookStorage(logger *zap.Logger, bucketName string, client *bolt.DB) BookStorage {
+func NewBoltBookStorage(logger *zap.Logger, boltConfig *BoltDB, client *bolt.DB) BookStorage {
 	return &boltBookStorage{
-		logger:     logger,
-		client:     client,
-		bucketName: bucketName,
+		logger: logger,
+		client: client,
+		config: boltConfig,
 	}
+}
+
+// Close shuts down the bolt-based book storage.
+func (bs *boltBookStorage) Close() error {
+	return bs.client.Close()
 }
 
 // Add inserts a new book record into boltdb store.
@@ -49,7 +54,7 @@ func (bs *boltBookStorage) Add(_ context.Context, id string, book Book) error {
 		return err
 	}
 	err = bs.client.Update(func(tx *bolt.Tx) error {
-		return tx.Bucket([]byte(bs.bucketName)).Put([]byte(id), bookBytes)
+		return tx.Bucket([]byte(bs.config.BucketName)).Put([]byte(id), bookBytes)
 	})
 	return err
 }
@@ -64,7 +69,7 @@ func (bs *boltBookStorage) GetOne(_ context.Context, id string) (Book, error) {
 	}
 	defer tx.Rollback()
 
-	result := tx.Bucket([]byte(bs.bucketName)).Get([]byte(id))
+	result := tx.Bucket([]byte(bs.config.BucketName)).Get([]byte(id))
 	if result == nil {
 		return book, ErrNotFoundBook
 	}
@@ -75,7 +80,7 @@ func (bs *boltBookStorage) GetOne(_ context.Context, id string) (Book, error) {
 // Delete removes a book record based on its ID from boltdb store.
 func (bs *boltBookStorage) Delete(_ context.Context, id string) error {
 	return bs.client.Update(func(tx *bolt.Tx) error {
-		return tx.Bucket([]byte(bs.bucketName)).Delete([]byte(id))
+		return tx.Bucket([]byte(bs.config.BucketName)).Delete([]byte(id))
 	})
 }
 
@@ -86,7 +91,7 @@ func (bs *boltBookStorage) Update(_ context.Context, id string, book Book) (Book
 		return book, err
 	}
 	err = bs.client.Update(func(tx *bolt.Tx) error {
-		return tx.Bucket([]byte(bs.bucketName)).Put([]byte(id), bookBytes)
+		return tx.Bucket([]byte(bs.config.BucketName)).Put([]byte(id), bookBytes)
 	})
 	return book, err
 }
@@ -100,7 +105,7 @@ func (bs *boltBookStorage) GetAll(_ context.Context) ([]Book, error) {
 	defer tx.Rollback()
 
 	// Create a cursor on the books' bucket.
-	c := tx.Bucket([]byte(bs.bucketName)).Cursor()
+	c := tx.Bucket([]byte(bs.config.BucketName)).Cursor()
 
 	books := []Book{}
 	for k, v := c.First(); k != nil; k, v = c.Next() {
