@@ -42,7 +42,7 @@ func (bs *boltBookStorage) closeTestBoltStore() error {
 	return bs.Close()
 }
 
-// Ensure Bolt store can insert a new book.
+// Ensure bolt store can insert a new book.
 func TestBoltStore_AddBook(t *testing.T) {
 	bs, err := newTestBoltStore()
 	require.NoError(t, err, "failed in creating a test bolt store")
@@ -54,7 +54,7 @@ func TestBoltStore_AddBook(t *testing.T) {
 	err = bs.Add(context.TODO(), "0", b)
 	assert.NoError(t, err)
 
-	// Check book can be retrieved.
+	// Verify book can be retrieved.
 	book, err := bs.GetOne(context.TODO(), "0")
 	assert.NoError(t, err)
 	assert.Equal(t, "0", book.ID)
