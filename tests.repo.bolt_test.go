@@ -20,7 +20,7 @@ func newTestBoltStore() (*boltBookStorage, error) {
 	}
 	f.Close()
 	testConfig := &Config{
-		BoltDB: BoltDB{
+		BoltDB: BoltDBConfig{
 			FilePath:   f.Name(),
 			Timeout:    5 * time.Second,
 			BucketName: "test.books",

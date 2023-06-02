@@ -12,7 +12,7 @@ import (
 type boltBookStorage struct {
 	logger *zap.Logger
 	client *bolt.DB
-	config *BoltDB
+	config *BoltDBConfig
 }
 
 // GetBoltClient setup the database and the bucket then provides a ready to use client.
@@ -34,7 +34,7 @@ func GetBoltDBClient(config *Config) (*bolt.DB, error) {
 }
 
 // NewBoltBookStorage provides an instance of bolt-based book storage.
-func NewBoltBookStorage(logger *zap.Logger, boltConfig *BoltDB, client *bolt.DB) BookStorage {
+func NewBoltBookStorage(logger *zap.Logger, boltConfig *BoltDBConfig, client *bolt.DB) BookStorage {
 	return &boltBookStorage{
 		logger: logger,
 		client: client,

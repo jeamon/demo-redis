@@ -19,12 +19,12 @@ type Config struct {
 	LogLevel       zapcore.Level `yaml:"log_level" envconfig:"DRAP_LOG_LEVEL"`
 	LogFile        string        `yaml:"log_file" envconfig:"DRAP_LOG_FILE"`
 	ProfilerEnable bool          `yaml:"profiler_enable" envconfig:"DRAP_PROFILER_ENABLE"`
-	Server         Server        `yaml:"server"`
-	Redis          Redis         `yaml:"redis"`
-	BoltDB         BoltDB        `yaml:"boltdb"`
+	Server         ServerConfig  `yaml:"server"`
+	Redis          RedisConfig   `yaml:"redis"`
+	BoltDB         BoltDBConfig  `yaml:"boltdb"`
 }
 
-type Server struct {
+type ServerConfig struct {
 	Host            string        `yaml:"host" envconfig:"DRAP_SERVER_HOST"`
 	Port            string        `yaml:"port" envconfig:"DRAP_SERVER_PORT"`
 	CertsFile       string        `yaml:"certs_file" envconfig:"DRAP_SERVER_CERTS_FILE"`
@@ -35,7 +35,7 @@ type Server struct {
 	ShutdownTimeout time.Duration `yaml:"shutdown_timeout" envconfig:"DRAP_SERVER_SHUTDOWN_TIMEOUT"`
 }
 
-type Redis struct {
+type RedisConfig struct {
 	Host          string        `yaml:"host" envconfig:"DRAP_REDIS_HOST"`
 	Port          string        `yaml:"port" envconfig:"DRAP_REDIS_PORT"`
 	DialTimeout   time.Duration `yaml:"dial_timeout" envconfig:"DRAP_REDIS_DIAL_TIMEOUT"`
@@ -48,7 +48,7 @@ type Redis struct {
 	DatabaseIndex int           `yaml:"db_index" envconfig:"DRAP_REDIS_DATABASE_INDEX"`
 }
 
-type BoltDB struct {
+type BoltDBConfig struct {
 	FilePath   string        `yaml:"filepath" envconfig:"DRAP_BOLTDB_FILE_PATH"`
 	Timeout    time.Duration `yaml:"timeout" envconfig:"DRAP_BOLTDB_TIMEOUT"`
 	BucketName string        `yaml:"bucket_name" envconfig:"DRAP_BOLTDB_BUCKET_NAME"`
