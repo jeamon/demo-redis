@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"io/ioutil"
 	"os"
 	"testing"
 	"time"
@@ -14,7 +13,7 @@ import (
 
 // NewStore returns a new instance of Store in a temporary path.
 func newTestBoltStore() (*boltBookStorage, error) {
-	f, err := ioutil.TempFile("", "tmp.bolt.db-")
+	f, err := os.CreateTemp("", "tmp.bolt.db-")
 	if err != nil {
 		return nil, err
 	}
