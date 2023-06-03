@@ -59,7 +59,7 @@ func (rs *redisBookStorage) GetOne(ctx context.Context, id string) (Book, error)
 	var book Book
 	bookJSONString, err := rs.client.HGet(ctx, HBooks, id).Result()
 	if err == redis.Nil {
-		return book, ErrNotFoundBook
+		return book, ErrBookNotFound
 	}
 	if err != nil {
 		return book, err
@@ -72,7 +72,7 @@ func (rs *redisBookStorage) GetOne(ctx context.Context, id string) (Book, error)
 func (rs *redisBookStorage) Delete(ctx context.Context, id string) error {
 	err := rs.client.HDel(ctx, HBooks, id).Err()
 	if err == redis.Nil {
-		return ErrNotFoundBook
+		return ErrBookNotFound
 	}
 	return err
 }

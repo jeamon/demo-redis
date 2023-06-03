@@ -71,7 +71,7 @@ func (bs *boltBookStorage) GetOne(_ context.Context, id string) (Book, error) {
 
 	result := tx.Bucket([]byte(bs.config.BucketName)).Get([]byte(id))
 	if result == nil {
-		return book, ErrNotFoundBook
+		return book, ErrBookNotFound
 	}
 	err = json.Unmarshal(result, &book)
 	return book, err

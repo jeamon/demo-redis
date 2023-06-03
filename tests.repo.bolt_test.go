@@ -90,7 +90,7 @@ func TestBoltStore_GetOneBook_FoundBook(t *testing.T) {
 }
 
 // Ensure bolt store returns an error if book does not exist.
-func TestBoltStore_GetOneBook_ErrNotFoundBook(t *testing.T) {
+func TestBoltStore_GetOneBook_ErrBookNotFound(t *testing.T) {
 	bs, err := newTestBoltStore()
 	require.NoError(t, err, "failed in creating a test bolt store")
 	defer bs.closeTestBoltStore()
@@ -103,7 +103,7 @@ func TestBoltStore_GetOneBook_ErrNotFoundBook(t *testing.T) {
 
 	// Verify another book does not exist.
 	book, err := bs.GetOne(context.TODO(), "b:1")
-	assert.Equal(t, ErrNotFoundBook, err)
+	assert.Equal(t, ErrBookNotFound, err)
 	assert.Equal(t, Book{}, book)
 }
 
@@ -133,11 +133,11 @@ func TestBoltStore_DeleteBook(t *testing.T) {
 
 	// Verify book does not exist.
 	book, err := bs.GetOne(context.TODO(), testBookID)
-	assert.Equal(t, ErrNotFoundBook, err)
+	assert.Equal(t, ErrBookNotFound, err)
 	assert.Equal(t, Book{}, book)
 }
 
-// Ensure bolt store can multiple books.
+// Ensure bolt store can retrieve multiple books.
 func TestBoltStore_GetAllBooks(t *testing.T) {
 	bs, err := newTestBoltStore()
 	require.NoError(t, err, "failed in creating a test bolt store")

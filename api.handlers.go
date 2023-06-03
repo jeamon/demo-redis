@@ -277,7 +277,7 @@ func (api *APIHandler) GetOneBook(w http.ResponseWriter, r *http.Request, ps htt
 	requestID := GetValueFromContext(r.Context(), ContextRequestID)
 	id := ps.ByName("id")
 	book, err := api.bookService.GetOne(r.Context(), id)
-	if err == ErrNotFoundBook {
+	if err == ErrBookNotFound {
 		api.logger.Error("book does not exist", zap.String("book.id", id), zap.String("request.id", requestID))
 		errResp := NewAPIError(requestID, http.StatusNotFound, "book does not exist", book)
 		if err = WriteErrorResponse(w, errResp); err != nil {
@@ -304,7 +304,7 @@ func (api *APIHandler) DeleteOneBook(w http.ResponseWriter, r *http.Request, ps 
 	requestID := GetValueFromContext(r.Context(), ContextRequestID)
 	id := ps.ByName("id")
 	book, err := api.bookService.GetOne(r.Context(), id)
-	if err == ErrNotFoundBook {
+	if err == ErrBookNotFound {
 		api.logger.Error("book does not exist", zap.String("book.id", id), zap.String("request.id", requestID))
 		errResp := NewAPIError(requestID, http.StatusNotFound, "book does not exist", book)
 		if err = WriteErrorResponse(w, errResp); err != nil {
@@ -322,7 +322,7 @@ func (api *APIHandler) DeleteOneBook(w http.ResponseWriter, r *http.Request, ps 
 	}
 
 	err = api.bookService.Delete(r.Context(), id)
-	if err == ErrNotFoundBook {
+	if err == ErrBookNotFound {
 		api.logger.Error("book does not exist", zap.String("book.id", id), zap.String("request.id", requestID))
 		errResp := NewAPIError(requestID, http.StatusNotFound, "book does not exist", book)
 		if err = WriteErrorResponse(w, errResp); err != nil {
