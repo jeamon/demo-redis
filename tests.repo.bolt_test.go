@@ -160,3 +160,76 @@ func TestBoltStore_GetAllBooks(t *testing.T) {
 		t.Errorf("Got %v but Expected %v.", books, []Book{b0, b1})
 	}
 }
+
+// Ensure bolt store can update an existing book details.
+func TestBoltStore_UpdateBook_ExistingBook(t *testing.T) {
+	bs, err := newTestBoltStore()
+	require.NoError(t, err, "failed in creating a test bolt store")
+	defer bs.closeTestBoltStore()
+	testBookID := "b:0"
+
+	// Create a new book.
+	b := Book{
+		ID:          testBookID,
+		Title:       "Bolt test book title",
+		Description: "Bolt test book desc",
+		Author:      "Jerome Amon",
+		Price:       "10$",
+		CreatedAt:   "2023-04-26 21:42:10.7604632 +0000 UTC",
+		UpdatedAt:   "2023-04-26 21:42:10.7604632 +0000 UTC",
+	}
+	err = bs.Add(context.TODO(), testBookID, b)
+	assert.NoError(t, err)
+
+	// Modify existing book details and update.
+	newBook := b
+	newBook.Title = "Bolt test book new title"
+	newBook.Price = "20$"
+	newBook.UpdatedAt = time.Now().UTC().String()
+	book, err := bs.Update(context.TODO(), testBookID, newBook)
+	assert.NoError(t, err)
+	if !reflect.DeepEqual(book, newBook) {
+		t.Errorf("Got %v but Expected %v.", book, b)
+	}
+
+	// Check if book was updated.
+	book, err = bs.GetOne(context.TODO(), testBookID)
+	assert.NoError(t, err)
+	if !reflect.DeepEqual(book, newBook) {
+		t.Errorf("Got %v but Expected %v.", book, newBook)
+	}
+}
+
+// Ensure bolt store inserts book during update operation if book
+// does not exist.
+func TestBoltStore_UpdateBook_NotExistingBook(t *testing.T) {
+	bs, err := newTestBoltStore()
+	require.NoError(t, err, "failed in creating a test bolt store")
+	defer bs.closeTestBoltStore()
+	testBookID := "b:0"
+
+	// Use update operation to add book.
+	b := Book{
+		ID:          testBookID,
+		Title:       "Bolt test book title",
+		Description: "Bolt test book desc",
+		Author:      "Jerome Amon",
+		Price:       "10$",
+		CreatedAt:   "2023-04-26 21:42:10.7604632 +0000 UTC",
+		UpdatedAt:   time.Now().UTC().String(),
+	}
+
+	// Modify existing book details and update.
+	book, err := bs.Update(context.TODO(), testBookID, b)
+	assert.NoError(t, err)
+	if !reflect.DeepEqual(book, b) {
+		t.Errorf("Got %v but Expected %v.", book, b)
+	}
+
+	// Check if book was added.
+	book, err = bs.GetOne(context.TODO(), testBookID)
+	assert.NoError(t, err)
+	if !reflect.DeepEqual(book, b) {
+		t.Errorf("Got %v but Expected %v.", book, b)
+	}
+}
