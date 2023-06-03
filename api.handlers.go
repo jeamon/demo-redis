@@ -93,7 +93,7 @@ func (api *APIHandler) Maintenance(w http.ResponseWriter, r *http.Request, ps ht
 	switch mstatus {
 	case "enable":
 		api.mode.message = q.Get("msg")
-		api.mode.started = time.Now()
+		api.mode.started = time.Now().UTC()
 		api.mode.enabled.Store(true)
 		response = map[string]interface{}{
 			"requestid":           requestID,
@@ -105,7 +105,7 @@ func (api *APIHandler) Maintenance(w http.ResponseWriter, r *http.Request, ps ht
 
 	case "disable":
 		api.mode.enabled.Store(false)
-		api.mode.started = time.Time{}
+		api.mode.started = time.Time{}.UTC()
 		api.mode.message = ""
 		response = map[string]interface{}{
 			"requestid": requestID,
@@ -117,7 +117,7 @@ func (api *APIHandler) Maintenance(w http.ResponseWriter, r *http.Request, ps ht
 		response = map[string]interface{}{
 			"message": "service currently unvailable.",
 			"reason":  api.mode.message,
-			"since":   api.mode.started.UTC().Format(time.RFC1123),
+			"since":   api.mode.started.Format(time.RFC1123),
 		}
 		w.WriteHeader(http.StatusServiceUnavailable)
 	}
@@ -175,6 +175,10 @@ func (api *APIHandler) GetStatistics(w http.ResponseWriter, r *http.Request, _ h
 	requestID := GetValueFromContext(r.Context(), ContextRequestID)
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	api.stats.mu.RLock()
+	maintenanceModeStartedTime := api.mode.started.String()
+	if api.mode.started == (time.Time{}.UTC()) {
+		maintenanceModeStartedTime = ""
+	}
 	err := json.NewEncoder(w).Encode(
 		map[string]interface{}{
 			"requestid":     requestID,
@@ -187,7 +191,7 @@ func (api *APIHandler) GetStatistics(w http.ResponseWriter, r *http.Request, _ h
 			"uptime":        fmt.Sprintf("%.0f mins", time.Since(api.stats.started).Minutes()),
 			"maintenance": map[string]interface{}{
 				"enabled": api.mode.enabled.Load(),
-				"started": api.mode.started,
+				"started": maintenanceModeStartedTime,
 				"message": api.mode.message,
 			},
 			"status": api.stats.status,
