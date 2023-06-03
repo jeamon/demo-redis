@@ -91,17 +91,13 @@ func (rs *redisBookStorage) Update(ctx context.Context, id string, book Book) (B
 func (rs *redisBookStorage) GetAll(ctx context.Context) ([]Book, error) {
 	mapBooks, err := rs.client.HVals(ctx, HBooks).Result()
 	if err != nil {
-		return []Book{}, err
+		return nil, err
 	}
 	books := []Book{}
 	for _, bookJSONString := range mapBooks {
 		var book Book
 		if err = json.Unmarshal([]byte(bookJSONString), &book); err != nil {
-			rs.logger.Error("failed to unmarshall details of book",
-				zap.String("request.id", GetValueFromContext(ctx, ContextRequestID)),
-				zap.Error(err),
-			)
-			continue
+			return nil, err
 		}
 		books = append(books, book)
 	}
