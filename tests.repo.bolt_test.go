@@ -46,16 +46,16 @@ func TestBoltStore_AddBook(t *testing.T) {
 	bs, err := newTestBoltStore()
 	require.NoError(t, err, "failed in creating a test bolt store")
 	defer bs.closeTestBoltStore()
+	testBookID := "b:0"
 
 	// Create a new book.
-	b := Book{ID: "0", Title: "Bolt test book title"}
-
-	err = bs.Add(context.TODO(), "0", b)
+	b := Book{ID: testBookID, Title: "Bolt test book title"}
+	err = bs.Add(context.TODO(), testBookID, b)
 	assert.NoError(t, err)
 
 	// Verify book can be retrieved.
-	book, err := bs.GetOne(context.TODO(), "0")
+	book, err := bs.GetOne(context.TODO(), testBookID)
 	assert.NoError(t, err)
-	assert.Equal(t, "0", book.ID)
+	assert.Equal(t, testBookID, book.ID)
 	assert.Equal(t, "Bolt test book title", book.Title)
 }
