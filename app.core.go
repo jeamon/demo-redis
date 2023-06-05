@@ -12,7 +12,6 @@ import (
 	"time"
 
 	"github.com/go-redis/redis/v9"
-	"github.com/joho/godotenv"
 	"github.com/julienschmidt/httprouter"
 	"go.uber.org/zap"
 	"golang.org/x/sync/errgroup"
@@ -34,30 +33,11 @@ type App struct {
 
 // NewApp provides an instance of App.
 func NewApp() (AppProvider, error) {
-	var err error
 	var app *App
 
-	// Setup the yaml configuration from file.
-	config, err := LoadConfigFile("./config.yml")
+	config, err := LoadAndInitConfigs(GitCommit, GitTag, BuildTime)
 	if err != nil {
-		return app, fmt.Errorf("failed to load configurations from file: %s", err)
-	}
-
-	// Set the environment configuration.
-	err = godotenv.Load("./config.env")
-	if err != nil {
-		return app, fmt.Errorf("failed to set environment configurations: %s", err)
-	}
-
-	// Use environment variables with prefix `DRAP`.
-	err = LoadConfigEnvs("DRAP", config)
-	if err != nil {
-		return app, fmt.Errorf("failed to load configurations from environment: %s", err)
-	}
-
-	err = InitConfig(config, GitCommit, GitTag, BuildTime)
-	if err != nil {
-		return app, fmt.Errorf("failed to initialize configurations: %s", err)
+		return nil, fmt.Errorf("failed to setup app configuration: %s", err)
 	}
 
 	// Ensure the logs folder exists and Setup the logging module.

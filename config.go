@@ -2,9 +2,11 @@ package main
 
 import (
 	"errors"
+	"fmt"
 	"os"
 	"time"
 
+	"github.com/joho/godotenv"
 	"github.com/kelseyhightower/envconfig"
 	"go.uber.org/zap/zapcore"
 	"gopkg.in/yaml.v3"
@@ -100,4 +102,32 @@ func InitConfig(config *Config, gitCommit, gitTag, buildTime string) error {
 	}
 
 	return nil
+}
+
+// LoadAndInitConfigs loads in order the configs from various predefined sources
+// then build the App configuration data.
+func LoadAndInitConfigs(gitCommit, gitTag, buildTime string) (*Config, error) {
+	// Setup the yaml configuration from file.
+	config, err := LoadConfigFile("./config.yml")
+	if err != nil {
+		return config, fmt.Errorf("failed to load configurations from file: %s", err)
+	}
+
+	// Set the environment configuration.
+	err = godotenv.Load("./config.env")
+	if err != nil {
+		return config, fmt.Errorf("failed to set environment configurations: %s", err)
+	}
+
+	// Use environment variables with prefix `DRAP`.
+	err = LoadConfigEnvs("DRAP", config)
+	if err != nil {
+		return config, fmt.Errorf("failed to load configurations from environment: %s", err)
+	}
+
+	err = InitConfig(config, gitCommit, gitTag, buildTime)
+	if err != nil {
+		return config, fmt.Errorf("failed to initialize configurations: %s", err)
+	}
+	return config, nil
 }
