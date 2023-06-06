@@ -149,3 +149,26 @@ func (m *Middlewares) Chain(h httprouter.Handle) httprouter.Handle {
 
 	return handle
 }
+
+// MiddlewaresStacks builds the map of middlewares stack.
+func (api *APIHandler) MiddlewaresStacks() (Middlewares, Middlewares) {
+	middlewaresPublic := Middlewares{
+		api.PanicRecoveryMiddleware,
+		api.MaintenanceModeMiddleware,
+		api.RequestsCounterMiddleware,
+		api.RequestIDMiddleware,
+		api.AddLoggerMiddleware,
+		CORSMiddleware,
+		api.DurationMiddleware,
+	}
+
+	middlewaresOps := Middlewares{
+		api.PanicRecoveryMiddleware,
+		api.RequestsCounterMiddleware,
+		api.RequestIDMiddleware,
+		api.AddLoggerMiddleware,
+		CORSMiddleware,
+		api.DurationMiddleware,
+	}
+	return middlewaresPublic, middlewaresOps
+}
