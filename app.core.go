@@ -83,25 +83,8 @@ func NewApp() (AppProvider, error) {
 		apiService.stats.version = config.GitCommit
 	}
 
-	// Build the map of middlewares stack.
-	middlewaresPublic := Middlewares{
-		apiService.PanicRecoveryMiddleware,
-		apiService.MaintenanceModeMiddleware,
-		apiService.RequestsCounterMiddleware,
-		apiService.RequestIDMiddleware,
-		apiService.AddLoggerMiddleware,
-		CORSMiddleware,
-		apiService.DurationMiddleware,
-	}
-
-	middlewaresOps := Middlewares{
-		apiService.PanicRecoveryMiddleware,
-		apiService.RequestsCounterMiddleware,
-		apiService.RequestIDMiddleware,
-		apiService.AddLoggerMiddleware,
-		CORSMiddleware,
-		apiService.DurationMiddleware,
-	}
+	// Build the map of middlewares stacks.
+	middlewaresPublic, middlewaresOps := apiService.MiddlewaresStacks()
 
 	// Configure the endpoints with their handlers and middlewares.
 	router := apiService.SetupRoutes(httprouter.New(),
