@@ -46,7 +46,11 @@ func (bs *boltBookStorage) closeTestBoltStore() error {
 func TestBoltStore_AddBook(t *testing.T) {
 	bs, err := newTestBoltStore()
 	require.NoError(t, err, "failed in creating a test bolt store")
-	defer bs.closeTestBoltStore()
+	defer func() {
+		err = bs.closeTestBoltStore()
+		assert.NoError(t, err)
+	}()
+
 	testBookID := "b:0"
 
 	// Create a new book.
@@ -65,7 +69,11 @@ func TestBoltStore_AddBook(t *testing.T) {
 func TestBoltStore_GetOneBook_FoundBook(t *testing.T) {
 	bs, err := newTestBoltStore()
 	require.NoError(t, err, "failed in creating a test bolt store")
-	defer bs.closeTestBoltStore()
+	defer func() {
+		err = bs.closeTestBoltStore()
+		assert.NoError(t, err)
+	}()
+
 	testBookID := "b:0"
 
 	// Create a new book.
@@ -93,7 +101,11 @@ func TestBoltStore_GetOneBook_FoundBook(t *testing.T) {
 func TestBoltStore_GetOneBook_ErrBookNotFound(t *testing.T) {
 	bs, err := newTestBoltStore()
 	require.NoError(t, err, "failed in creating a test bolt store")
-	defer bs.closeTestBoltStore()
+	defer func() {
+		err = bs.closeTestBoltStore()
+		assert.NoError(t, err)
+	}()
+
 	testBookID := "b:0"
 
 	// Create a new book.
@@ -111,7 +123,11 @@ func TestBoltStore_GetOneBook_ErrBookNotFound(t *testing.T) {
 func TestBoltStore_DeleteBook(t *testing.T) {
 	bs, err := newTestBoltStore()
 	require.NoError(t, err, "failed in creating a test bolt store")
-	defer bs.closeTestBoltStore()
+	defer func() {
+		err = bs.closeTestBoltStore()
+		assert.NoError(t, err)
+	}()
+
 	testBookID := "b:0"
 
 	// Create a new book.
@@ -141,7 +157,11 @@ func TestBoltStore_DeleteBook(t *testing.T) {
 func TestBoltStore_GetAllBooks(t *testing.T) {
 	bs, err := newTestBoltStore()
 	require.NoError(t, err, "failed in creating a test bolt store")
-	defer bs.closeTestBoltStore()
+	defer func() {
+		err = bs.closeTestBoltStore()
+		assert.NoError(t, err)
+	}()
+
 	testBook0ID := "b:0"
 	testBook1ID := "b:1"
 
@@ -165,7 +185,11 @@ func TestBoltStore_GetAllBooks(t *testing.T) {
 func TestBoltStore_UpdateBook_ExistingBook(t *testing.T) {
 	bs, err := newTestBoltStore()
 	require.NoError(t, err, "failed in creating a test bolt store")
-	defer bs.closeTestBoltStore()
+	defer func() {
+		err = bs.closeTestBoltStore()
+		assert.NoError(t, err)
+	}()
+
 	testBookID := "b:0"
 
 	// Create a new book.
@@ -205,7 +229,11 @@ func TestBoltStore_UpdateBook_ExistingBook(t *testing.T) {
 func TestBoltStore_UpdateBook_NotExistingBook(t *testing.T) {
 	bs, err := newTestBoltStore()
 	require.NoError(t, err, "failed in creating a test bolt store")
-	defer bs.closeTestBoltStore()
+	defer func() {
+		err = bs.closeTestBoltStore()
+		assert.NoError(t, err)
+	}()
+
 	testBookID := "b:0"
 
 	// Use update operation to add book.

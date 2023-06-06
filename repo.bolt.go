@@ -67,7 +67,9 @@ func (bs *boltBookStorage) GetOne(_ context.Context, id string) (Book, error) {
 	if err != nil {
 		return book, err
 	}
-	defer tx.Rollback()
+	defer func() {
+		_ = tx.Rollback()
+	}()
 
 	result := tx.Bucket([]byte(bs.config.BucketName)).Get([]byte(id))
 	if result == nil {
@@ -102,7 +104,9 @@ func (bs *boltBookStorage) GetAll(_ context.Context) ([]Book, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer tx.Rollback()
+	defer func() {
+		_ = tx.Rollback()
+	}()
 
 	// Create a cursor on the books' bucket.
 	c := tx.Bucket([]byte(bs.config.BucketName)).Cursor()
