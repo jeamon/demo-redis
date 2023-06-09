@@ -51,13 +51,3 @@ func (bs *BookService) GetAll(ctx context.Context) ([]Book, error) {
 	books, err := bs.storage.GetAll(ctx)
 	return books, err
 }
-
-/*
-type AuthServiceEntity interface {
-	CreateAccessToken(credential *model.Credential) (*model.TokenDetails, error)
-	VerifyAccessToken(tokenString string) (*model.UserCredential, error)
-	StoreAccessToken(userName string, tokenDetails *model.TokenDetails) error
-	FetchAccessToken(userCredential *model.UserCredential) (string, error)
-	DeleteAccessToken(accessUuid string) error
-}
-*/
