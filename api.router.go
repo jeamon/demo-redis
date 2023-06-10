@@ -28,21 +28,11 @@ func (api *APIHandler) SetupRoutes(router *httprouter.Router, m *MiddlewareMap) 
 	router.GET("/ops/debug/fos", m.ops(api.FreeOSMemory))
 
 	if api.config.ProfilerEnable {
-		router.GET("/ops/debug/pprof/", func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-			pprof.Index(w, r)
-		})
-		router.GET("/ops/debug/pprof/profile", func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-			pprof.Profile(w, r)
-		})
-		router.GET("/ops/debug/pprof/trace", func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-			pprof.Trace(w, r)
-		})
-		router.GET("/ops/debug/pprof/symbol", func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-			pprof.Symbol(w, r)
-		})
-		router.GET("/ops/debug/pprof/cmdline", func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-			pprof.Cmdline(w, r)
-		})
+		router.GET("/ops/debug/pprof/", m.ops(api.GetProfilerIndexPage))
+		router.GET("/ops/debug/pprof/profile", m.ops(api.GetCPUProfile))
+		router.GET("/ops/debug/pprof/trace", m.ops(api.GetTraceProfile))
+		router.GET("/ops/debug/pprof/symbol", m.ops(api.GetSymbol))
+		router.GET("/ops/debug/pprof/cmdline", m.ops(api.GetCmdLine))
 		router.Handler(http.MethodGet, "/ops/debug/pprof/heap", pprof.Handler("heap"))
 		router.Handler(http.MethodGet, "/ops/debug/pprof/allocs", pprof.Handler("allocs"))
 		router.Handler(http.MethodGet, "/ops/debug/pprof/goroutine", pprof.Handler("goroutine"))
