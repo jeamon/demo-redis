@@ -7,6 +7,12 @@ import (
 	"github.com/julienschmidt/httprouter"
 )
 
+func (api *APIHandler) OpsHandlerWrapper(h http.Handler) httprouter.Handle {
+	return func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+		h.ServeHTTP(w, r)
+	}
+}
+
 func (api *APIHandler) GetProfilerIndexPage(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	pprof.Index(w, r)
 }
