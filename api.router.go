@@ -1,7 +1,6 @@
 package main
 
 import (
-	"net/http"
 	"net/http/pprof"
 
 	"github.com/julienschmidt/httprouter"
@@ -33,12 +32,12 @@ func (api *APIHandler) SetupRoutes(router *httprouter.Router, m *MiddlewareMap) 
 		router.GET("/ops/debug/pprof/trace", m.ops(api.GetTraceProfile))
 		router.GET("/ops/debug/pprof/symbol", m.ops(api.GetSymbol))
 		router.GET("/ops/debug/pprof/cmdline", m.ops(api.GetCmdLine))
-		router.Handler(http.MethodGet, "/ops/debug/pprof/heap", pprof.Handler("heap"))
-		router.Handler(http.MethodGet, "/ops/debug/pprof/allocs", pprof.Handler("allocs"))
-		router.Handler(http.MethodGet, "/ops/debug/pprof/goroutine", pprof.Handler("goroutine"))
-		router.Handler(http.MethodGet, "/ops/debug/pprof/threadcreate", pprof.Handler("threadcreate"))
-		router.Handler(http.MethodGet, "/ops/debug/pprof/block", pprof.Handler("block"))
-		router.Handler(http.MethodGet, "/ops/debug/pprof/mutex", pprof.Handler("mutex"))
+		router.GET("/ops/debug/pprof/heap", m.ops(api.OpsHandlerWrapper(pprof.Handler("heap"))))
+		router.GET("/ops/debug/pprof/allocs", m.ops(api.OpsHandlerWrapper(pprof.Handler("allocs"))))
+		router.GET("/ops/debug/pprof/goroutine", m.ops(api.OpsHandlerWrapper(pprof.Handler("goroutine"))))
+		router.GET("/ops/debug/pprof/threadcreate", m.ops(api.OpsHandlerWrapper(pprof.Handler("threadcreate"))))
+		router.GET("/ops/debug/pprof/block", m.ops(api.OpsHandlerWrapper(pprof.Handler("block"))))
+		router.GET("/ops/debug/pprof/mutex", m.ops(api.OpsHandlerWrapper(pprof.Handler("mutex"))))
 	}
 
 	return router
