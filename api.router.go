@@ -1,6 +1,7 @@
 package main
 
 import (
+	"net/http"
 	"net/http/pprof"
 
 	"github.com/julienschmidt/httprouter"
@@ -27,7 +28,7 @@ func (api *APIHandler) SetupRoutes(router *httprouter.Router, m *MiddlewareMap) 
 	router.GET("/ops/debug/fos", m.ops(api.FreeOSMemory))
 
 	if api.config.ProfilerEnable {
-		router.GET("/ops/debug/pprof/", m.ops(api.GetProfilerIndexPage))
+		router.GET("/ops/debug/pprof/", m.ops(api.OpsHandlerWrapper(http.HandlerFunc(pprof.Index))))
 		router.GET("/ops/debug/pprof/profile", m.ops(api.GetCPUProfile))
 		router.GET("/ops/debug/pprof/trace", m.ops(api.GetTraceProfile))
 		router.GET("/ops/debug/pprof/symbol", m.ops(api.GetSymbol))

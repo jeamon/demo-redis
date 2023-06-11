@@ -165,9 +165,9 @@ func (api *APIHandler) Maintenance(w http.ResponseWriter, r *http.Request, ps ht
 }
 
 // GetProfilerIndexPage displays pprof index page.
-func (api *APIHandler) GetProfilerIndexPage(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-	pprof.Index(w, r)
-}
+// func (api *APIHandler) GetProfilerIndexPage(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+//	pprof.Index(w, r)
+// }
 
 // GetCPUProfile returns a snapshot of the pprof-formatted CPU profile.
 func (api *APIHandler) GetCPUProfile(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
