@@ -87,7 +87,7 @@ func (api *APIHandler) CreateBook(w http.ResponseWriter, r *http.Request, _ http
 	err = ValidateCreateBookRequestBody(&book)
 	if err != nil {
 		api.logger.Error("failed to create book", zap.String("request.id", requestID), zap.Error(err))
-		errResp := NewAPIError(requestID, http.StatusBadRequest, "failed to create the book", err)
+		errResp := NewAPIError(requestID, http.StatusBadRequest, "failed to create the book", err.Error())
 		if err = WriteErrorResponse(w, errResp); err != nil {
 			api.logger.Error("failed to send error response", zap.String("request.id", requestID), zap.Error(err))
 		}
@@ -220,7 +220,7 @@ func (api *APIHandler) UpdateBook(w http.ResponseWriter, r *http.Request, _ http
 	err = ValidateUpdateBookRequestBody(&book)
 	if err != nil {
 		api.logger.Error("failed to update book", zap.String("request.id", requestID), zap.Error(err))
-		errResp := NewAPIError(requestID, http.StatusBadRequest, "failed to update the book", err)
+		errResp := NewAPIError(requestID, http.StatusBadRequest, "failed to update the book", err.Error())
 		if err = WriteErrorResponse(w, errResp); err != nil {
 			api.logger.Error("failed to send error response", zap.String("request.id", requestID), zap.Error(err))
 		}
