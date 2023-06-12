@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -99,6 +100,61 @@ func TestCreateBookHandler(t *testing.T) {
 		assert.Equal(t, "Jerome Amon", bookMap["author"])
 		assert.Equal(t, "10$", bookMap["price"])
 
+		assert.NotEmpty(t, bookMap["createdAt"])
+		assert.NotEmpty(t, bookMap["updatedAt"])
+	})
+
+	t.Run("should fail: storage insertion failure", func(t *testing.T) {
+		mockRepo := &MockBookStorage{
+			AddFunc: func(ctx context.Context, id string, book Book) error {
+				return errors.New("storage failure")
+			},
+		}
+		bs := NewBookService(zap.NewNop(), nil, mockRepo)
+		api := NewAPIHandler(zap.NewNop(), nil, &Statistics{started: time.Now()}, bs)
+
+		book := Book{
+			Title:       "Test book title",
+			Description: "Test book description",
+			Author:      "Jerome Amon",
+			Price:       "10$",
+		}
+
+		payload, err := json.Marshal(book)
+		assert.NoError(t, err)
+		req := httptest.NewRequest(http.MethodPost, "/v1/books", bytes.NewBuffer(payload))
+		w := httptest.NewRecorder()
+		api.CreateBook(w, req, httprouter.Params{})
+		res := w.Result()
+		defer res.Body.Close()
+		data, err := io.ReadAll(res.Body)
+		assert.NoError(t, err)
+		assert.Equal(t, http.StatusInternalServerError, res.StatusCode)
+		assert.Equal(t, "application/json; charset=UTF-8", res.Header.Get("Content-Type"))
+
+		resultMap := make(map[string]interface{})
+		err = json.Unmarshal(data, &resultMap)
+		assert.NoError(t, err)
+
+		_, ok := resultMap["requestid"]
+		assert.True(t, ok)
+
+		v, ok := resultMap["status"]
+		assert.True(t, ok)
+		assert.Equal(t, float64(http.StatusInternalServerError), v)
+
+		v, ok = resultMap["message"]
+		assert.True(t, ok)
+		assert.Equal(t, "failed to create the book", v)
+
+		v, ok = resultMap["data"]
+		assert.True(t, ok)
+		bookMap, ok := v.(map[string]interface{})
+		assert.True(t, ok)
+		assert.Equal(t, "Test book title", bookMap["title"])
+		assert.Equal(t, "Test book description", bookMap["description"])
+		assert.Equal(t, "Jerome Amon", bookMap["author"])
+		assert.Equal(t, "10$", bookMap["price"])
 		assert.NotEmpty(t, bookMap["createdAt"])
 		assert.NotEmpty(t, bookMap["updatedAt"])
 	})
