@@ -16,8 +16,6 @@ import (
 	"go.uber.org/zap"
 )
 
-// This file contains unit tests for each api handler.
-
 // TestStatusHandler ensures api handler can provides its status.
 func TestStatusHandler(t *testing.T) {
 	req := httptest.NewRequest(http.MethodGet, "/status", nil)
@@ -47,6 +45,8 @@ func TestStatusHandler(t *testing.T) {
 }
 
 // TestCreateBookHandler ensures api handler can create a book.
+//
+//nolint:funlen
 func TestCreateBookHandler(t *testing.T) {
 	mockRepo := &MockBookStorage{
 		AddFunc: func(ctx context.Context, id string, book Book) error {
@@ -110,8 +110,8 @@ func TestCreateBookHandler(t *testing.T) {
 				return errors.New("storage failure")
 			},
 		}
-		bs := NewBookService(zap.NewNop(), nil, mockRepo)
-		api := NewAPIHandler(zap.NewNop(), nil, &Statistics{started: time.Now()}, bs)
+		bs = NewBookService(zap.NewNop(), nil, mockRepo)
+		api = NewAPIHandler(zap.NewNop(), nil, &Statistics{started: time.Now()}, bs)
 
 		book := Book{
 			Title:       "Test book title",
