@@ -264,3 +264,50 @@ func TestCreateBookHandler(t *testing.T) {
 		}
 	})
 }
+
+func TestDeleteOneBook_MissingBook(t *testing.T) {
+	mockRepo := &MockBookStorage{
+		GetOneFunc: func(ctx context.Context, id string) (Book, error) {
+			return Book{}, ErrBookNotFound
+		},
+	}
+
+	bs := NewBookService(zap.NewNop(), nil, mockRepo)
+	api := NewAPIHandler(zap.NewNop(), nil, &Statistics{started: time.Now()}, bs)
+
+	missingBookID := "b:cb8f2136-fae4-4200-85d9-3533c7f8c70d"
+	req := httptest.NewRequest(http.MethodDelete, "/v1/books/"+missingBookID, nil)
+	w := httptest.NewRecorder()
+	api.DeleteOneBook(w, req, httprouter.Params{})
+	res := w.Result()
+	defer res.Body.Close()
+	data, err := io.ReadAll(res.Body)
+	assert.NoError(t, err)
+	assert.Equal(t, http.StatusNotFound, res.StatusCode)
+	assert.Equal(t, "application/json; charset=UTF-8", res.Header.Get("Content-Type"))
+
+	resultMap := make(map[string]interface{})
+	err = json.Unmarshal(data, &resultMap)
+	assert.NoError(t, err)
+
+	_, ok := resultMap["requestid"]
+	assert.True(t, ok)
+
+	v, ok := resultMap["status"]
+	assert.True(t, ok)
+	assert.Equal(t, float64(http.StatusNotFound), v)
+
+	v, ok = resultMap["message"]
+	assert.True(t, ok)
+	assert.Equal(t, "book does not exist", v)
+
+	v, ok = resultMap["data"]
+	assert.True(t, ok)
+
+	bookMap, ok := v.(map[string]interface{})
+	assert.True(t, ok)
+	bookJSONString, err := json.Marshal(bookMap)
+	assert.NoError(t, err)
+	expected := `{"id":"", "title":"", "description":"", "author":"", "price":"", "createdAt":"", "updatedAt":""}`
+	assert.JSONEq(t, expected, string(bookJSONString))
+}
