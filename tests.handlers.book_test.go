@@ -229,33 +229,11 @@ func TestDeleteOneBook_MissingBook(t *testing.T) {
 	api.DeleteOneBook(w, req, httprouter.Params{})
 	res := w.Result()
 	defer res.Body.Close()
-	data, err := io.ReadAll(res.Body)
-	assert.NoError(t, err)
 	assert.Equal(t, http.StatusNotFound, res.StatusCode)
 	assert.Equal(t, "application/json; charset=UTF-8", res.Header.Get("Content-Type"))
-
-	resultMap := make(map[string]interface{})
-	err = json.Unmarshal(data, &resultMap)
+	data, err := io.ReadAll(res.Body)
 	assert.NoError(t, err)
-
-	_, ok := resultMap["requestid"]
-	assert.True(t, ok)
-
-	v, ok := resultMap["status"]
-	assert.True(t, ok)
-	assert.Equal(t, float64(http.StatusNotFound), v)
-
-	v, ok = resultMap["message"]
-	assert.True(t, ok)
-	assert.Equal(t, "book does not exist", v)
-
-	v, ok = resultMap["data"]
-	assert.True(t, ok)
-
-	bookMap, ok := v.(map[string]interface{})
-	assert.True(t, ok)
-	bookJSONString, err := json.Marshal(bookMap)
-	assert.NoError(t, err)
-	expected := `{"id":"", "title":"", "description":"", "author":"", "price":"", "createdAt":"", "updatedAt":""}`
-	assert.JSONEq(t, expected, string(bookJSONString))
+	expected := `{"requestid":"", "status":404, "message":"book does not exist",
+		"data":{"id":"", "title":"", "description":"", "author":"", "price":"", "createdAt":"", "updatedAt":""}}`
+	assert.JSONEq(t, expected, string(data))
 }
