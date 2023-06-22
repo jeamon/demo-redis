@@ -160,106 +160,54 @@ func TestCreateBookHandler(t *testing.T) {
 	})
 
 	t.Run("should fail: invalid payload", func(t *testing.T) {
-		b := struct {
-			Title       int
-			Description string
-			Author      string
-			Price       string
-		}{
-			Title:       1,
-			Description: "Test book description",
-			Author:      "Jerome Amon",
-			Price:       "10$",
-		}
-		payload, err := json.Marshal(b)
-		assert.NoError(t, err)
-		req := httptest.NewRequest(http.MethodPost, "/v1/books", bytes.NewBuffer(payload))
+		jsonStringPayload := `{"title":1, "description":"Test book description", "author":"Jerome Amon", "price":"10$"}`
+		req := httptest.NewRequest(http.MethodPost, "/v1/books", bytes.NewBuffer([]byte(jsonStringPayload)))
 		w := httptest.NewRecorder()
 		api.CreateBook(w, req, httprouter.Params{})
 		res := w.Result()
 		defer res.Body.Close()
-		data, err := io.ReadAll(res.Body)
-		assert.NoError(t, err)
 		assert.Equal(t, http.StatusBadRequest, res.StatusCode)
 		assert.Equal(t, "application/json; charset=UTF-8", res.Header.Get("Content-Type"))
-
-		resultMap := make(map[string]interface{})
-		err = json.Unmarshal(data, &resultMap)
+		data, err := io.ReadAll(res.Body)
 		assert.NoError(t, err)
-
-		_, ok := resultMap["requestid"]
-		assert.True(t, ok)
-
-		v, ok := resultMap["status"]
-		assert.True(t, ok)
-		assert.Equal(t, float64(http.StatusBadRequest), v)
-
-		v, ok = resultMap["message"]
-		assert.True(t, ok)
-		assert.Equal(t, "failed to create the book", v)
-
-		v, ok = resultMap["data"]
-		assert.True(t, ok)
-		bookMap, ok := v.(map[string]interface{})
-		assert.True(t, ok)
-		assert.Empty(t, bookMap["title"])
-		assert.Equal(t, "Test book description", bookMap["description"])
-		assert.Equal(t, "Jerome Amon", bookMap["author"])
-		assert.Equal(t, "10$", bookMap["price"])
-		assert.Empty(t, bookMap["createdAt"])
-		assert.Empty(t, bookMap["updatedAt"])
+		expected := `{"requestid":"", "status":400, "message":"failed to create the book",
+		"data":{"id":"", "title":"", "description":"Test book description", "author":"Jerome Amon", "price":"10$", "createdAt":"", "updatedAt":""}}`
+		assert.JSONEq(t, expected, string(data))
 	})
 
 	t.Run("should fail: required field in payload", func(t *testing.T) {
-		testCases := map[string]Book{
-			"empty": {
-				Title:       "",
-				Description: "Test book description",
-				Author:      "Jerome Amon",
-				Price:       "10$",
+		testCases := []struct {
+			name     string
+			payload  []byte
+			status   int
+			expected string
+		}{
+			{
+				name:     "empty",
+				payload:  []byte(`{"title":"", "description":"Test book description", "author":"Jerome Amon", "price":"10$"}`),
+				status:   http.StatusBadRequest,
+				expected: `{"requestid":"", "status":400, "message":"failed to create the book", "data":"title is required"}`,
 			},
-			"missing": {
-				Description: "Test book description",
-				Author:      "Jerome Amon",
-				Price:       "10$",
+			{
+				name:     "missing",
+				payload:  []byte(`{"description":"Test book description", "author":"Jerome Amon", "price":"10$"}`),
+				status:   http.StatusBadRequest,
+				expected: `{"requestid":"", "status":400, "message":"failed to create the book", "data":"title is required"}`,
 			},
 		}
 
-		for k := range testCases {
-			tc := testCases[k]
-			t.Run(k, func(t *testing.T) {
-				payload, err := json.Marshal(tc)
-				assert.NoError(t, err)
-				req := httptest.NewRequest(http.MethodPost, "/v1/books", bytes.NewBuffer(payload))
+		for _, tc := range testCases {
+			t.Run(tc.name, func(t *testing.T) {
+				req := httptest.NewRequest(http.MethodPost, "/v1/books", bytes.NewBuffer(tc.payload))
 				w := httptest.NewRecorder()
 				api.CreateBook(w, req, httprouter.Params{})
 				res := w.Result()
 				defer res.Body.Close()
+				assert.Equal(t, tc.status, res.StatusCode)
+				assert.Equal(t, "application/json; charset=UTF-8", res.Header.Get("Content-Type"))
 				data, err := io.ReadAll(res.Body)
 				assert.NoError(t, err)
-				assert.Equal(t, http.StatusBadRequest, res.StatusCode)
-				assert.Equal(t, "application/json; charset=UTF-8", res.Header.Get("Content-Type"))
-
-				resultMap := make(map[string]interface{})
-				err = json.Unmarshal(data, &resultMap)
-				assert.NoError(t, err)
-
-				_, ok := resultMap["requestid"]
-				assert.True(t, ok)
-
-				v, ok := resultMap["status"]
-				assert.True(t, ok)
-				assert.Equal(t, float64(http.StatusBadRequest), v)
-
-				v, ok = resultMap["message"]
-				assert.True(t, ok)
-				assert.Equal(t, "failed to create the book", v)
-
-				v, ok = resultMap["data"]
-				assert.True(t, ok)
-				errMsg, ok := v.(string)
-				assert.True(t, ok)
-				assert.Equal(t, "title is required", errMsg)
+				assert.JSONEq(t, tc.expected, string(data))
 			})
 		}
 	})
