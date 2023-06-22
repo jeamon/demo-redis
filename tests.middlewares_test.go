@@ -91,3 +91,34 @@ func TestRequestsCounterMiddleware(t *testing.T) {
 	assert.Equal(t, true, called)
 	assert.Equal(t, uint64(1), api.stats.called)
 }
+
+// TestMaintenanceModeMiddleware ensures users requests are handled according
+// to maintenance mode current settings.
+func TestMaintenanceModeMiddleware(t *testing.T) {
+	t.Run("maintenance disabled", func(t *testing.T) {
+		req := httptest.NewRequest("GET", "/v1/books", nil)
+		w := httptest.NewRecorder()
+		var called bool
+		handler := func(w http.ResponseWriter, req *http.Request, ps httprouter.Params) {
+			called = true
+		}
+		api := NewAPIHandler(zap.NewNop(), nil, &Statistics{started: time.Now()}, nil)
+		wrapped := api.MaintenanceModeMiddleware(handler)
+		wrapped(w, req, nil)
+		assert.Equal(t, true, called)
+	})
+
+	t.Run("maintenance enabled", func(t *testing.T) {
+		req := httptest.NewRequest("GET", "/", nil)
+		w := httptest.NewRecorder()
+		var called bool
+		handler := func(w http.ResponseWriter, req *http.Request, ps httprouter.Params) {
+			called = true
+		}
+		api := NewAPIHandler(zap.NewNop(), nil, &Statistics{started: time.Now()}, nil)
+		api.mode.enabled.Store(true)
+		wrapped := api.MaintenanceModeMiddleware(handler)
+		wrapped(w, req, nil)
+		assert.Equal(t, false, called)
+	})
+}
