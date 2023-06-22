@@ -45,8 +45,6 @@ func TestStatusHandler(t *testing.T) {
 }
 
 // TestCreateBookHandler ensures api handler can create a book.
-//
-//nolint:funlen
 func TestCreateBookHandler(t *testing.T) {
 	mockRepo := &MockBookStorage{
 		AddFunc: func(ctx context.Context, id string, book Book) error {
