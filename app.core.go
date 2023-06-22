@@ -34,7 +34,6 @@ type App struct {
 // NewApp provides an instance of App.
 func NewApp() (AppProvider, error) {
 	var app *App
-
 	config, err := LoadAndInitConfigs(GitCommit, GitTag, BuildTime)
 	if err != nil {
 		return nil, fmt.Errorf("failed to setup app configuration: %s", err)
@@ -89,8 +88,8 @@ func NewApp() (AppProvider, error) {
 	// Configure the endpoints with their handlers and middlewares.
 	router := apiService.SetupRoutes(httprouter.New(),
 		&MiddlewareMap{
-			public: (&middlewaresPublic).Chain,
-			ops:    (&middlewaresOps).Chain,
+			public: middlewaresPublic.Chain,
+			ops:    middlewaresOps.Chain,
 		},
 	)
 	// Wrap the router with the default http timeout handler.
