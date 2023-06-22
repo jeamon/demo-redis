@@ -76,3 +76,18 @@ func TestChain(t *testing.T) {
 		assert.Equal(t, 4, <-queue)
 	})
 }
+
+// TestRequestsCounterMiddleware ensures the request counter increment.
+func TestRequestsCounterMiddleware(t *testing.T) {
+	api := NewAPIHandler(zap.NewNop(), nil, &Statistics{started: time.Now(), called: 0}, nil)
+	req := httptest.NewRequest("GET", "/v1/books", nil)
+	w := httptest.NewRecorder()
+	var called bool
+	handler := func(w http.ResponseWriter, req *http.Request, ps httprouter.Params) {
+		called = true
+	}
+	wrapped := api.RequestsCounterMiddleware(handler)
+	wrapped(w, req, nil)
+	assert.Equal(t, true, called)
+	assert.Equal(t, uint64(1), api.stats.called)
+}
