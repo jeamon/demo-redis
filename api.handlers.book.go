@@ -29,7 +29,7 @@ type Statistics struct {
 // Maintenance holds app maintenance mode infos.
 type Maintenance struct {
 	enabled atomic.Bool
-	message string
+	reason  string
 	started time.Time
 }
 

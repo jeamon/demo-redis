@@ -84,7 +84,7 @@ func (api *APIHandler) GetStatistics(w http.ResponseWriter, r *http.Request, _ h
 			"maintenance": map[string]interface{}{
 				"enabled": api.mode.enabled.Load(),
 				"started": maintenanceModeStartedTime,
-				"message": api.mode.message,
+				"reason":  api.mode.reason,
 			},
 			"status": api.stats.status,
 		},
@@ -126,13 +126,13 @@ func (api *APIHandler) Maintenance(w http.ResponseWriter, r *http.Request, ps ht
 
 	switch mstatus {
 	case "enable":
-		api.mode.message = q.Get("msg")
+		api.mode.reason = q.Get("msg")
 		api.mode.started = time.Now().UTC()
 		api.mode.enabled.Store(true)
 		response = map[string]interface{}{
 			"requestid":           requestID,
 			"maintenance.started": api.mode.started.Format(time.RFC1123),
-			"maintenance.message": api.mode.message,
+			"maintenance.reason":  api.mode.reason,
 			"message":             "Maintenance mode enabled successfully.",
 		}
 		logger = api.logger.With(zap.String("request.id", requestID))
@@ -150,7 +150,7 @@ func (api *APIHandler) Maintenance(w http.ResponseWriter, r *http.Request, ps ht
 	case "show":
 		response = map[string]interface{}{
 			"message": "service currently unvailable.",
-			"reason":  api.mode.message,
+			"reason":  api.mode.reason,
 			"since":   api.mode.started.Format(time.RFC1123),
 		}
 		w.WriteHeader(http.StatusServiceUnavailable)
