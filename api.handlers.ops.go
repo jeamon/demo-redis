@@ -140,7 +140,7 @@ func (api *APIHandler) Maintenance(w http.ResponseWriter, r *http.Request, ps ht
 	case "disable":
 		api.mode.enabled.Store(false)
 		api.mode.started = time.Time{}.UTC()
-		api.mode.message = ""
+		api.mode.reason = ""
 		response = map[string]interface{}{
 			"requestid": requestID,
 			"message":   "Maintenance mode disabled successfully.",
