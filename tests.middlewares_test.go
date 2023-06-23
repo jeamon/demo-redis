@@ -1,6 +1,8 @@
 package main
 
 import (
+	"encoding/json"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -117,8 +119,33 @@ func TestMaintenanceModeMiddleware(t *testing.T) {
 		}
 		api := NewAPIHandler(zap.NewNop(), nil, &Statistics{started: time.Now()}, nil)
 		api.mode.enabled.Store(true)
+		ts := time.Now()
+		api.mode.started = ts
+		api.mode.reason = "ongoing maintenance."
 		wrapped := api.MaintenanceModeMiddleware(handler)
 		wrapped(w, req, nil)
+		// target handler will not be called but the maintenance handler must kick-in.
 		assert.Equal(t, false, called)
+
+		res := w.Result()
+		defer res.Body.Close()
+		data, err := io.ReadAll(res.Body)
+		assert.NoError(t, err)
+
+		resultMap := make(map[string]interface{})
+		err = json.Unmarshal(data, &resultMap)
+		assert.NoError(t, err)
+
+		v, ok := resultMap["message"]
+		assert.Equal(t, true, ok)
+		assert.Equal(t, "service currently unvailable.", v)
+
+		v, ok = resultMap["reason"]
+		assert.Equal(t, true, ok)
+		assert.Equal(t, "ongoing maintenance.", v)
+
+		v, ok = resultMap["since"]
+		assert.Equal(t, true, ok)
+		assert.Equal(t, ts.Format(time.RFC1123), v)
 	})
 }
