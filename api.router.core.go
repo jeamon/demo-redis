@@ -8,6 +8,8 @@ import (
 func (api *APIHandler) SetupRoutes(router *httprouter.Router, m *MiddlewareMap) *httprouter.Router {
 	router.RedirectTrailingSlash = true
 	api.SetupBookRoutes(router, m)
-	api.SetupOpsRoutes(router, m)
+	if api.config.OpsEndpointsEnable {
+		api.SetupOpsRoutes(router, m)
+	}
 	return router
 }

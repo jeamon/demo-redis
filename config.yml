@@ -16,9 +16,13 @@ git_commit: ""
 git_tag: ""
 build_time: ""
 
+# Determines the injection of ops endpoints.
+ops_endpoints_enable: true
+
 # Determines the injection of http-based
-# pprof endpoints on the server.
-profiler_enable: true
+# pprof endpoints on the server. If `True`
+# ensure `ops_endpoints_enable` is enabled.
+profiler_endpoints_enable: true
 
 # Api server settings
 server:
