@@ -192,26 +192,46 @@ func TestCreateBookHandler(t *testing.T) {
 }
 
 func TestDeleteOneBook_MissingBook(t *testing.T) {
-	mockRepo := &MockBookStorage{
-		GetOneFunc: func(ctx context.Context, id string) (Book, error) {
-			return Book{}, ErrBookNotFound
-		},
+	helper := func(t *testing.T, repo BookStorage) *http.Response {
+		t.Helper()
+		bs := NewBookService(zap.NewNop(), nil, repo)
+		api := NewAPIHandler(zap.NewNop(), nil, &Statistics{started: time.Now()}, bs)
+		missingBookID := "b:cb8f2136-fae4-4200-85d9-3533c7f8c70d"
+		req := httptest.NewRequest(http.MethodDelete, "/v1/books/"+missingBookID, nil)
+		w := httptest.NewRecorder()
+		api.DeleteOneBook(w, req, httprouter.Params{})
+		return w.Result()
 	}
 
-	bs := NewBookService(zap.NewNop(), nil, mockRepo)
-	api := NewAPIHandler(zap.NewNop(), nil, &Statistics{started: time.Now()}, bs)
-
-	missingBookID := "b:cb8f2136-fae4-4200-85d9-3533c7f8c70d"
-	req := httptest.NewRequest(http.MethodDelete, "/v1/books/"+missingBookID, nil)
-	w := httptest.NewRecorder()
-	api.DeleteOneBook(w, req, httprouter.Params{})
-	res := w.Result()
-	defer res.Body.Close()
-	assert.Equal(t, http.StatusNotFound, res.StatusCode)
-	assert.Equal(t, "application/json; charset=UTF-8", res.Header.Get("Content-Type"))
-	data, err := io.ReadAll(res.Body)
-	assert.NoError(t, err)
-	expected := `{"requestid":"", "status":404, "message":"book does not exist",
-		"data":{"id":"", "title":"", "description":"", "author":"", "price":"", "createdAt":"", "updatedAt":""}}`
-	assert.JSONEq(t, expected, string(data))
+	testCases := []struct {
+		name string
+		repo *MockBookStorage
+	}{
+		{
+			"during checking",
+			&MockBookStorage{
+				GetOneFunc: func(ctx context.Context, id string) (Book, error) { return Book{}, ErrBookNotFound },
+			},
+		},
+		{
+			"during deletion",
+			&MockBookStorage{
+				GetOneFunc: func(ctx context.Context, id string) (Book, error) { return Book{}, nil },
+				DeleteFunc: func(ctx context.Context, id string) error { return ErrBookNotFound },
+			},
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			res := helper(t, tc.repo)
+			defer res.Body.Close()
+			assert.Equal(t, http.StatusNotFound, res.StatusCode)
+			assert.Equal(t, "application/json; charset=UTF-8", res.Header.Get("Content-Type"))
+			data, err := io.ReadAll(res.Body)
+			assert.NoError(t, err)
+			expected := `{"requestid":"", "status":404, "message":"book does not exist",
+				"data":{"id":"", "title":"", "description":"", "author":"", "price":"", "createdAt":"", "updatedAt":""}}`
+			assert.JSONEq(t, expected, string(data))
+		})
+	}
 }
