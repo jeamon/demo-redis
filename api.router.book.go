@@ -5,7 +5,7 @@ import (
 )
 
 // SetupBookRoutes injects book related the api endpoints.
-func (api *APIHandler) SetupBookRoutes(router *httprouter.Router, m *MiddlewareMap) *httprouter.Router {
+func (api *APIHandler) SetupBookRoutes(router *httprouter.Router, m *MiddlewareMap) {
 	router.RedirectTrailingSlash = true
 	router.GET("/", m.public(api.Index))
 	router.GET("/status", m.public(api.Status))
@@ -14,5 +14,4 @@ func (api *APIHandler) SetupBookRoutes(router *httprouter.Router, m *MiddlewareM
 	router.GET("/v1/books/:id", m.public(api.GetOneBook))
 	router.PUT("/v1/books/:id", m.public(api.UpdateBook))
 	router.DELETE("/v1/books/:id", m.public(api.DeleteOneBook))
-	return router
 }
