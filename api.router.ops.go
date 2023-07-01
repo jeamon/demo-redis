@@ -8,7 +8,7 @@ import (
 )
 
 // SetupOpsRoutes injects internal operations related endpoints.
-func (api *APIHandler) SetupOpsRoutes(router *httprouter.Router, m *MiddlewareMap) *httprouter.Router {
+func (api *APIHandler) SetupOpsRoutes(router *httprouter.Router, m *MiddlewareMap) {
 	router.GET("/ops/configs", m.ops(api.GetConfigs))
 	router.GET("/ops/stats", m.ops(api.GetStatistics))
 	router.GET("/ops/maintenance", m.ops(api.Maintenance))
@@ -29,6 +29,4 @@ func (api *APIHandler) SetupOpsRoutes(router *httprouter.Router, m *MiddlewareMa
 		router.GET("/ops/debug/pprof/block", m.ops(api.OpsHandlerWrapper(pprof.Handler("block"))))
 		router.GET("/ops/debug/pprof/mutex", m.ops(api.OpsHandlerWrapper(pprof.Handler("mutex"))))
 	}
-
-	return router
 }
