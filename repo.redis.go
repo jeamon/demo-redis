@@ -70,8 +70,8 @@ func (rs *redisBookStorage) GetOne(ctx context.Context, id string) (Book, error)
 
 // Delete removes a book record based on its ID.
 func (rs *redisBookStorage) Delete(ctx context.Context, id string) error {
-	err := rs.client.HDel(ctx, HBooks, id).Err()
-	if err == redis.Nil {
+	numDeleted, err := rs.client.HDel(ctx, HBooks, id).Result()
+	if numDeleted == 0 || err == redis.Nil {
 		return ErrBookNotFound
 	}
 	return err
