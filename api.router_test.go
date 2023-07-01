@@ -12,7 +12,7 @@ import (
 	"go.uber.org/zap"
 )
 
-// TestSetupBookRoutes ensures all expected endpoints are implemented.
+// TestSetupBookRoutes ensures all expected book endpoints are implemented.
 func TestSetupBookRoutes(t *testing.T) {
 	testCases := []struct {
 		name        string
@@ -93,6 +93,65 @@ func TestSetupBookRoutes(t *testing.T) {
 	router := httprouter.New()
 	m := &MiddlewareMap{public: (&Middlewares{}).Chain, ops: (&Middlewares{}).Chain}
 	api.SetupBookRoutes(router, m)
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			w := httptest.NewRecorder()
+			router.ServeHTTP(w, tc.request)
+			if tc.implemented {
+				assert.NotEqual(t, 404, w.Code)
+			} else {
+				assert.Equal(t, 404, w.Code)
+			}
+		})
+	}
+}
+
+// TestSetupOpsRoutes ensures all expected operations endpoints are implemented.
+func TestSetupOpsRoutes(t *testing.T) {
+	testCases := []struct {
+		name        string
+		request     *http.Request
+		implemented bool
+	}{
+		{
+			"fetch configs endpoint",
+			httptest.NewRequest(http.MethodGet, "/ops/configs", nil),
+			true,
+		},
+		{
+			"ops endpoint with slash",
+			httptest.NewRequest(http.MethodGet, "/ops/configs", nil),
+			true,
+		},
+		{
+			"fetch stats endpoint",
+			httptest.NewRequest(http.MethodGet, "/ops/stats", nil),
+			true,
+		},
+		{
+			"maintenance mode endpoint",
+			httptest.NewRequest(http.MethodGet, "/ops/maintenance", nil),
+			true,
+		},
+		{
+			"invalid ops endpoint",
+			httptest.NewRequest(http.MethodGet, "/ops", nil),
+			false,
+		},
+		{
+			"unknown ops endpoint",
+			httptest.NewRequest(http.MethodGet, "/ops/unknown", nil),
+			false,
+		},
+	}
+
+	config := &Config{ProfilerEndpointsEnable: false}
+	bs := NewBookService(zap.NewNop(), config, nil)
+	api := NewAPIHandler(zap.NewNop(), config, &Statistics{started: time.Now()}, bs)
+	router := httprouter.New()
+	m := &MiddlewareMap{public: (&Middlewares{}).Chain, ops: (&Middlewares{}).Chain}
+	api.SetupOpsRoutes(router, m)
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
