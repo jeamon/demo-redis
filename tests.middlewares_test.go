@@ -149,3 +149,21 @@ func TestMaintenanceModeMiddleware(t *testing.T) {
 		assert.Equal(t, ts.Format(time.RFC1123), v)
 	})
 }
+
+// TestRequestIDMiddleware ensures a request id is added to request context.
+func TestRequestIDMiddleware(t *testing.T) {
+	api := NewAPIHandler(zap.NewNop(), nil, &Statistics{started: time.Now(), called: 0}, nil)
+	req := httptest.NewRequest("GET", "/v1/books", nil)
+	w := httptest.NewRecorder()
+	var called bool
+	var id string
+	handler := func(w http.ResponseWriter, req *http.Request, ps httprouter.Params) {
+		called = true
+		id = GetValueFromContext(req.Context(), ContextRequestID)
+	}
+	wrapped := api.RequestIDMiddleware(handler)
+	wrapped(w, req, nil)
+	assert.Equal(t, true, called)
+	assert.NotEmpty(t, id)
+	assert.Contains(t, id, RequestIDPrefix+":")
+}
