@@ -144,6 +144,11 @@ func TestSetupOpsRoutes(t *testing.T) {
 			httptest.NewRequest(http.MethodGet, "/ops/unknown", nil),
 			false,
 		},
+		{
+			"disabled profiler endpoint",
+			httptest.NewRequest(http.MethodGet, "/ops/debug/pprof/", nil),
+			false,
+		},
 	}
 
 	config := &Config{ProfilerEndpointsEnable: false}
@@ -155,6 +160,89 @@ func TestSetupOpsRoutes(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
+			w := httptest.NewRecorder()
+			router.ServeHTTP(w, tc.request)
+			if tc.implemented {
+				assert.NotEqual(t, 404, w.Code)
+			} else {
+				assert.Equal(t, 404, w.Code)
+			}
+		})
+	}
+}
+
+// TestSetupRoutes ensures all expected endpoints are implemented.
+func TestSetupRoutes(t *testing.T) {
+	testCases := []struct {
+		name               string
+		OpsEndpointsEnable bool
+		request            *http.Request
+		implemented        bool
+	}{
+		{
+			"ops disable:fetch configs endpoint",
+			false,
+			httptest.NewRequest(http.MethodGet, "/ops/configs", nil),
+			false,
+		},
+		{
+			"ops enable:fetch configs endpoint",
+			true,
+			httptest.NewRequest(http.MethodGet, "/ops/configs", nil),
+			true,
+		},
+		{
+			"ops disable:disabled profiler endpoint",
+			false,
+			httptest.NewRequest(http.MethodGet, "/ops/debug/pprof/", nil),
+			false,
+		},
+		{
+			"ops enable:disabled profiler endpoint",
+			true,
+			httptest.NewRequest(http.MethodGet, "/ops/debug/pprof/", nil),
+			false,
+		},
+		{
+			"ops disable:create book endpoint",
+			false,
+			httptest.NewRequest(http.MethodPost, "/v1/books", nil),
+			true,
+		},
+		{
+			"ops enable:create book endpoint",
+			true,
+			httptest.NewRequest(http.MethodPost, "/v1/books", nil),
+			true,
+		},
+		{
+			"invalid ops endpoint",
+			false,
+			httptest.NewRequest(http.MethodGet, "/ops/", nil),
+			false,
+		},
+		{
+			"invalid book endpoint",
+			false,
+			httptest.NewRequest(http.MethodGet, "/books/", nil),
+			false,
+		},
+	}
+
+	config := &Config{OpsEndpointsEnable: false, ProfilerEndpointsEnable: false}
+	bs := NewBookService(zap.NewNop(), config, nil)
+	api := NewAPIHandler(zap.NewNop(), config, &Statistics{started: time.Now()}, bs)
+	m := &MiddlewareMap{public: (&Middlewares{}).Chain, ops: (&Middlewares{}).Chain}
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			router := httprouter.New()
+			if tc.OpsEndpointsEnable {
+				config.OpsEndpointsEnable = true
+				api.SetupRoutes(router, m)
+			} else {
+				config.OpsEndpointsEnable = false
+				api.SetupRoutes(router, m)
+			}
 			w := httptest.NewRecorder()
 			router.ServeHTTP(w, tc.request)
 			if tc.implemented {
