@@ -21,7 +21,7 @@ import (
 func TestStatusHandler(t *testing.T) {
 	req := httptest.NewRequest(http.MethodGet, "/status", nil)
 	w := httptest.NewRecorder()
-	api := NewAPIHandler(zap.NewNop(), nil, &Statistics{started: time.Now()}, NewMockClocker(), nil)
+	api := NewAPIHandler(zap.NewNop(), nil, &Statistics{started: NewMockClocker().Now()}, NewMockClocker(), nil)
 	api.Status(w, req, httprouter.Params{})
 	res := w.Result()
 	defer res.Body.Close()

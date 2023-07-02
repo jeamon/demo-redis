@@ -4,7 +4,6 @@ import (
 	"context"
 	"net/http"
 	"sync/atomic"
-	"time"
 
 	"github.com/julienschmidt/httprouter"
 	"go.uber.org/zap"
@@ -35,7 +34,7 @@ func (api *APIHandler) DurationMiddleware(next httprouter.Handle) httprouter.Han
 		logger.Info(
 			"request",
 			zap.Int("request.status", nw.statusCode),
-			zap.Duration("request.duration", time.Since(start)),
+			zap.Duration("request.duration", api.clock.Now().Sub(start)),
 		)
 		api.stats.mu.Lock()
 		if num, found := api.stats.status[nw.statusCode]; !found {

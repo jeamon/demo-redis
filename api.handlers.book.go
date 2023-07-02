@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"time"
 
 	"github.com/julienschmidt/httprouter"
 	"go.uber.org/zap"
@@ -22,7 +21,7 @@ func (api *APIHandler) Status(w http.ResponseWriter, r *http.Request, _ httprout
 	if err := json.NewEncoder(w).Encode(
 		map[string]interface{}{
 			"requestid": requestID,
-			"status":    fmt.Sprintf("up & running since %.0f mins", time.Since(api.stats.started).Minutes()),
+			"status":    fmt.Sprintf("up & running since %.0f mins", api.clock.Now().Sub(api.stats.started).Minutes()),
 			"message":   "Hello. Books store api is available. Enjoy :)",
 		},
 	); err != nil {

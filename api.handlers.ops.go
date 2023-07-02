@@ -100,7 +100,7 @@ func (api *APIHandler) GetStatistics(w http.ResponseWriter, r *http.Request, _ h
 			"go.version":    api.stats.runtime,
 			"called":        atomic.LoadUint64(&api.stats.called) - 1,
 			"started":       api.stats.started.Format(time.RFC1123),
-			"uptime":        fmt.Sprintf("%.0f mins", time.Since(api.stats.started).Minutes()),
+			"uptime":        fmt.Sprintf("%.0f mins", api.clock.Now().Sub(api.stats.started).Minutes()),
 			"maintenance": map[string]interface{}{
 				"enabled": api.mode.enabled.Load(),
 				"started": maintenanceModeStartedTime,
