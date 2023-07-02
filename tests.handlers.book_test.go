@@ -98,7 +98,6 @@ func TestCreateBookHandler(t *testing.T) {
 		assert.Equal(t, "Test book description", bookMap["description"])
 		assert.Equal(t, "Jerome Amon", bookMap["author"])
 		assert.Equal(t, "10$", bookMap["price"])
-
 		assert.Equal(t, "2023-07-02 00:00:00 +0000 UTC", bookMap["createdAt"])
 		assert.Equal(t, "2023-07-02 00:00:00 +0000 UTC", bookMap["updatedAt"])
 	})
@@ -110,7 +109,7 @@ func TestCreateBookHandler(t *testing.T) {
 			},
 		}
 		bs = NewBookService(zap.NewNop(), nil, NewMockClocker(), mockRepo)
-		api = NewAPIHandler(zap.NewNop(), nil, &Statistics{started: time.Now()}, NewMockClocker(), bs)
+		api = NewAPIHandler(zap.NewNop(), nil, &Statistics{started: NewMockClocker().Now()}, NewMockClocker(), bs)
 
 		payload := `{"title":"Test book title", "description":"Test book description", "author":"Jerome Amon", "price":"10$"}`
 		req := httptest.NewRequest(http.MethodPost, "/v1/books", bytes.NewBuffer([]byte(payload)))
@@ -134,8 +133,8 @@ func TestCreateBookHandler(t *testing.T) {
 		assert.Equal(t, "Test book description", bookMap["description"])
 		assert.Equal(t, "Jerome Amon", bookMap["author"])
 		assert.Equal(t, "10$", bookMap["price"])
-		assert.NotEmpty(t, bookMap["createdAt"])
-		assert.NotEmpty(t, bookMap["updatedAt"])
+		assert.Equal(t, "2023-07-02 00:00:00 +0000 UTC", bookMap["createdAt"])
+		assert.Equal(t, "2023-07-02 00:00:00 +0000 UTC", bookMap["updatedAt"])
 	})
 
 	t.Run("should fail: invalid payload", func(t *testing.T) {
