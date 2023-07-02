@@ -63,7 +63,7 @@ func NewApp() (AppProvider, error) {
 
 	// Setup the repository and api services and routing..
 	redisBookStorage := NewRedisBookStorage(logger, redisClient)
-	bookService := NewBookService(logger, config, redisBookStorage)
+	bookService := NewBookService(logger, config, NewClock(), redisBookStorage)
 	apiService := NewAPIHandler(
 		logger,
 		config,
@@ -74,6 +74,7 @@ func NewApp() (AppProvider, error) {
 			runtime:   runtime.Version(),
 			platform:  runtime.GOOS + "/" + runtime.GOARCH,
 		},
+		NewClock(),
 		bookService,
 	)
 
