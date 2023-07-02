@@ -8,7 +8,9 @@ import (
 
 	"github.com/julienschmidt/httprouter"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"go.uber.org/zap"
+	"go.uber.org/zap/zaptest/observer"
 )
 
 // TestMiddlewaresStacks ensures we get both public and ops middlewares
@@ -150,4 +152,40 @@ func TestRequestIDMiddleware(t *testing.T) {
 	assert.Equal(t, true, called)
 	assert.NotEmpty(t, id)
 	assert.Contains(t, id, RequestIDPrefix+":")
+}
+
+// TestAddLoggerMiddleware ensures custom logger with exact fields is injected into the request context.
+func TestAddLoggerMiddleware(t *testing.T) {
+	observedZapCore, observedLogs := observer.New(zap.InfoLevel)
+	observedLogger := zap.New(observedZapCore)
+	api := NewAPIHandler(observedLogger, nil, &Statistics{started: NewMockClocker().Now(), called: 0}, NewMockClocker(), nil)
+	req := httptest.NewRequest("GET", "/v1/books", nil)
+	w := httptest.NewRecorder()
+	var called bool
+	var value interface{}
+	handler := func(w http.ResponseWriter, req *http.Request, ps httprouter.Params) {
+		called = true
+		value = req.Context().Value(ContextRequestLogger)
+	}
+	wrapped := api.AddLoggerMiddleware(handler)
+	wrapped(w, req, nil)
+	assert.Equal(t, true, called)
+	logger, ok := value.(*zap.Logger)
+	require.Equal(t, true, ok)
+	// trigger a logging in order to have the log message
+	// and the all fields values saved for later assertion.
+	logger.Info("fake log")
+
+	require.Equal(t, 1, observedLogs.Len())
+	log := observedLogs.All()[0]
+	assert.Equal(t, "fake log", log.Message)
+	assert.ElementsMatch(t, []zap.Field{
+		zap.String("request.id", ""),
+		zap.Uint64("request.number", 0),
+		zap.String("request.method", "GET"),
+		zap.String("request.path", "/v1/books"),
+		zap.String("request.ip", "192.0.2.1"),
+		zap.String("request.agent", ""),
+		zap.String("request.referer", ""),
+	}, log.Context)
 }
