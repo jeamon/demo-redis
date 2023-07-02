@@ -16,7 +16,7 @@ import (
 // TestMiddlewaresStacks ensures we get both public and ops middlewares
 // stacks with exact number of elements in those stacks.
 func TestMiddlewaresStacks(t *testing.T) {
-	api := NewAPIHandler(zap.NewNop(), nil, &Statistics{started: time.Now()}, nil)
+	api := NewAPIHandler(zap.NewNop(), nil, &Statistics{started: NewMockClocker().Now()}, NewMockClocker(), nil)
 	pub, ops := api.MiddlewaresStacks()
 	assert.Equal(t, 7, len(*pub))
 	assert.Equal(t, 6, len(*ops))
@@ -81,7 +81,7 @@ func TestChain(t *testing.T) {
 
 // TestRequestsCounterMiddleware ensures the request counter increment.
 func TestRequestsCounterMiddleware(t *testing.T) {
-	api := NewAPIHandler(zap.NewNop(), nil, &Statistics{started: time.Now(), called: 0}, nil)
+	api := NewAPIHandler(zap.NewNop(), nil, &Statistics{started: NewMockClocker().Now(), called: 0}, NewMockClocker(), nil)
 	req := httptest.NewRequest("GET", "/v1/books", nil)
 	w := httptest.NewRecorder()
 	var called bool
@@ -104,7 +104,7 @@ func TestMaintenanceModeMiddleware(t *testing.T) {
 		handler := func(w http.ResponseWriter, req *http.Request, ps httprouter.Params) {
 			called = true
 		}
-		api := NewAPIHandler(zap.NewNop(), nil, &Statistics{started: time.Now()}, nil)
+		api := NewAPIHandler(zap.NewNop(), nil, &Statistics{started: NewMockClocker().Now()}, NewMockClocker(), nil)
 		wrapped := api.MaintenanceModeMiddleware(handler)
 		wrapped(w, req, nil)
 		assert.Equal(t, true, called)
@@ -117,7 +117,7 @@ func TestMaintenanceModeMiddleware(t *testing.T) {
 		handler := func(w http.ResponseWriter, req *http.Request, ps httprouter.Params) {
 			called = true
 		}
-		api := NewAPIHandler(zap.NewNop(), nil, &Statistics{started: time.Now()}, nil)
+		api := NewAPIHandler(zap.NewNop(), nil, &Statistics{started: NewMockClocker().Now()}, NewMockClocker(), nil)
 		api.mode.enabled.Store(true)
 		ts := time.Now()
 		api.mode.started = ts
@@ -152,7 +152,7 @@ func TestMaintenanceModeMiddleware(t *testing.T) {
 
 // TestRequestIDMiddleware ensures a request id is added to request context.
 func TestRequestIDMiddleware(t *testing.T) {
-	api := NewAPIHandler(zap.NewNop(), nil, &Statistics{started: time.Now(), called: 0}, nil)
+	api := NewAPIHandler(zap.NewNop(), nil, &Statistics{started: NewMockClocker().Now(), called: 0}, NewMockClocker(), nil)
 	req := httptest.NewRequest("GET", "/v1/books", nil)
 	w := httptest.NewRecorder()
 	var called bool

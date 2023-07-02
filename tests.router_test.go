@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
-	"time"
 
 	"github.com/julienschmidt/httprouter"
 	"github.com/stretchr/testify/assert"
@@ -88,8 +87,8 @@ func TestSetupBookRoutes(t *testing.T) {
 			return []Book{}, nil
 		},
 	}
-	bs := NewBookService(zap.NewNop(), nil, mockRepo)
-	api := NewAPIHandler(zap.NewNop(), nil, &Statistics{started: time.Now()}, bs)
+	bs := NewBookService(zap.NewNop(), nil, NewMockClocker(), mockRepo)
+	api := NewAPIHandler(zap.NewNop(), nil, &Statistics{started: NewMockClocker().Now()}, NewMockClocker(), bs)
 	router := httprouter.New()
 	m := &MiddlewareMap{public: (&Middlewares{}).Chain, ops: (&Middlewares{}).Chain}
 	api.SetupBookRoutes(router, m)
@@ -152,8 +151,8 @@ func TestSetupOpsRoutes(t *testing.T) {
 	}
 
 	config := &Config{ProfilerEndpointsEnable: false}
-	bs := NewBookService(zap.NewNop(), config, nil)
-	api := NewAPIHandler(zap.NewNop(), config, &Statistics{started: time.Now()}, bs)
+	bs := NewBookService(zap.NewNop(), config, NewMockClocker(), nil)
+	api := NewAPIHandler(zap.NewNop(), config, &Statistics{started: NewMockClocker().Now()}, NewMockClocker(), bs)
 	router := httprouter.New()
 	m := &MiddlewareMap{public: (&Middlewares{}).Chain, ops: (&Middlewares{}).Chain}
 	api.SetupOpsRoutes(router, m)
@@ -230,8 +229,8 @@ func TestSetupRoutes(t *testing.T) {
 	}
 
 	config := &Config{OpsEndpointsEnable: false, ProfilerEndpointsEnable: false}
-	bs := NewBookService(zap.NewNop(), config, nil)
-	api := NewAPIHandler(zap.NewNop(), config, &Statistics{started: time.Now()}, bs)
+	bs := NewBookService(zap.NewNop(), config, NewMockClocker(), nil)
+	api := NewAPIHandler(zap.NewNop(), config, &Statistics{started: NewMockClocker().Now()}, NewMockClocker(), bs)
 	m := &MiddlewareMap{public: (&Middlewares{}).Chain, ops: (&Middlewares{}).Chain}
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
