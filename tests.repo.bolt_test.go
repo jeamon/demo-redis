@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"os"
-	"reflect"
 	"testing"
 	"time"
 
@@ -92,9 +91,7 @@ func TestBoltStore_GetOneBook_FoundBook(t *testing.T) {
 	// Verify book does exist.
 	book, err := bs.GetOne(context.TODO(), testBookID)
 	assert.NoError(t, err)
-	if !reflect.DeepEqual(book, b) {
-		t.Errorf("Got %v but Expected %v.", book, b)
-	}
+	assert.Equal(t, b, book)
 }
 
 // Ensure bolt store returns an error if book does not exist.
@@ -176,9 +173,7 @@ func TestBoltStore_GetAllBooks(t *testing.T) {
 	// Verify books can be retrieved.
 	books, err := bs.GetAll(context.TODO())
 	assert.NoError(t, err)
-	if !reflect.DeepEqual(books, []Book{b0, b1}) {
-		t.Errorf("Got %v but Expected %v.", books, []Book{b0, b1})
-	}
+	assert.ElementsMatch(t, books, []Book{b0, b1})
 }
 
 // Ensure bolt store can update an existing book details.
@@ -212,16 +207,12 @@ func TestBoltStore_UpdateBook_ExistingBook(t *testing.T) {
 	newBook.UpdatedAt = time.Now().UTC().String()
 	book, err := bs.Update(context.TODO(), testBookID, newBook)
 	assert.NoError(t, err)
-	if !reflect.DeepEqual(book, newBook) {
-		t.Errorf("Got %v but Expected %v.", book, b)
-	}
+	assert.Equal(t, book, newBook)
 
 	// Check if book was updated.
 	book, err = bs.GetOne(context.TODO(), testBookID)
 	assert.NoError(t, err)
-	if !reflect.DeepEqual(book, newBook) {
-		t.Errorf("Got %v but Expected %v.", book, newBook)
-	}
+	assert.Equal(t, book, newBook)
 }
 
 // Ensure bolt store inserts book during update operation if book
@@ -250,14 +241,10 @@ func TestBoltStore_UpdateBook_NotExistingBook(t *testing.T) {
 	// Modify existing book details and update.
 	book, err := bs.Update(context.TODO(), testBookID, b)
 	assert.NoError(t, err)
-	if !reflect.DeepEqual(book, b) {
-		t.Errorf("Got %v but Expected %v.", book, b)
-	}
+	assert.Equal(t, b, book)
 
 	// Check if book was added.
 	book, err = bs.GetOne(context.TODO(), testBookID)
 	assert.NoError(t, err)
-	if !reflect.DeepEqual(book, b) {
-		t.Errorf("Got %v but Expected %v.", book, b)
-	}
+	assert.Equal(t, b, book)
 }
