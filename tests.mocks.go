@@ -1,6 +1,9 @@
 package main
 
-import "context"
+import (
+	"context"
+	"time"
+)
 
 // This file contains mocks definitions needed to perform unit tests.
 
@@ -35,4 +38,19 @@ func (m *MockBookStorage) Update(ctx context.Context, id string, book Book) (Boo
 // GetAll mocks the behavior of retrieving all books by the repository.
 func (m *MockBookStorage) GetAll(ctx context.Context) ([]Book, error) {
 	return m.GetAllFunc(ctx)
+}
+
+// MockClocker implements a fake Clocker.
+type MockClocker struct {
+	MockNow time.Time
+}
+
+// NewMockClocker returns a mocked instance with fixed time.
+func NewMockClocker() *MockClocker {
+	return &MockClocker{time.Date(2023, 07, 02, 00, 00, 00, 000000000, time.UTC)}
+}
+
+// Now returns an already defined time to be used as mock.
+func (mck *MockClocker) Now() time.Time {
+	return mck.MockNow
 }
