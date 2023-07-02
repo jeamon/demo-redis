@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"time"
 
 	"go.uber.org/zap"
 )
@@ -18,13 +17,15 @@ type BookServiceProvider interface {
 type BookService struct {
 	logger  *zap.Logger
 	config  *Config
+	clock   Clocker
 	storage BookStorage
 }
 
-func NewBookService(logger *zap.Logger, config *Config, storage BookStorage) BookServiceProvider {
+func NewBookService(logger *zap.Logger, config *Config, clock Clocker, storage BookStorage) BookServiceProvider {
 	return &BookService{
 		logger:  logger,
 		config:  config,
+		clock:   clock,
 		storage: storage,
 	}
 }
@@ -43,7 +44,7 @@ func (bs *BookService) Delete(ctx context.Context, id string) error {
 }
 
 func (bs *BookService) Update(ctx context.Context, id string, book Book) (Book, error) {
-	book.UpdatedAt = time.Now().UTC().String()
+	book.UpdatedAt = bs.clock.Now().UTC().String()
 	return bs.storage.Update(ctx, id, book)
 }
 
