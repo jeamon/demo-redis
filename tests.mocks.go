@@ -52,6 +52,7 @@ func NewMockClocker() *MockClocker {
 
 // Now returns an already defined time to be used as mock. This
 // equals to `Sun, 02 Jul 2023 00:00:00 UTC` in time.RFC1123 format.
+// equals to `2023-07-02 00:00:00 +0000 UTC` in String format.
 func (mck *MockClocker) Now() time.Time {
 	return mck.MockNow
 }
