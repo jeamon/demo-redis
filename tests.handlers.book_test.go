@@ -13,6 +13,7 @@ import (
 
 	"github.com/julienschmidt/httprouter"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"go.uber.org/zap"
 )
 
@@ -52,7 +53,7 @@ func TestCreateBookHandler(t *testing.T) {
 		},
 	}
 	bs := NewBookService(zap.NewNop(), nil, NewMockClocker(), mockRepo)
-	api := NewAPIHandler(zap.NewNop(), nil, &Statistics{started: time.Now()}, NewMockClocker(), bs)
+	api := NewAPIHandler(zap.NewNop(), nil, &Statistics{started: NewMockClocker().Now()}, NewMockClocker(), bs)
 
 	t.Run("should pass: valid payload", func(t *testing.T) {
 		book := Book{
@@ -69,7 +70,7 @@ func TestCreateBookHandler(t *testing.T) {
 		res := w.Result()
 		defer res.Body.Close()
 		data, err := io.ReadAll(res.Body)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.Equal(t, http.StatusCreated, res.StatusCode)
 		assert.Equal(t, "application/json; charset=UTF-8", res.Header.Get("Content-Type"))
 
@@ -98,8 +99,8 @@ func TestCreateBookHandler(t *testing.T) {
 		assert.Equal(t, "Jerome Amon", bookMap["author"])
 		assert.Equal(t, "10$", bookMap["price"])
 
-		assert.NotEmpty(t, bookMap["createdAt"])
-		assert.NotEmpty(t, bookMap["updatedAt"])
+		assert.Equal(t, "2023-07-02 00:00:00 +0000 UTC", bookMap["createdAt"])
+		assert.Equal(t, "2023-07-02 00:00:00 +0000 UTC", bookMap["updatedAt"])
 	})
 
 	t.Run("should fail: storage insertion failure", func(t *testing.T) {
