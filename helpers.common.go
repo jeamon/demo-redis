@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/gofrs/uuid"
 )
@@ -19,6 +20,14 @@ type (
 	missingFieldError string
 )
 
+// Clocker is an interface for getting current real time.
+type Clocker interface {
+	Now() time.Time
+}
+
+// Clock implements the Clocker interface.
+type Clock struct{}
+
 const (
 	BookIDPrefix         string     = "b"
 	RequestIDPrefix      string     = "r"
@@ -28,6 +37,16 @@ const (
 
 func (m missingFieldError) Error() string {
 	return string(m) + " is required"
+}
+
+// NewClock returns a ready to use Clock.
+func NewClock() *Clock {
+	return &Clock{}
+}
+
+// Now provides current clock time.
+func (ck *Clock) Now() time.Time {
+	return time.Now()
 }
 
 // GenerateID provides a random uid.
