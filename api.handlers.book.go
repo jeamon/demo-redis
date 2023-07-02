@@ -54,8 +54,8 @@ func (api *APIHandler) CreateBook(w http.ResponseWriter, r *http.Request, _ http
 	}
 
 	book.ID = GenerateID(BookIDPrefix)
-	book.CreatedAt = time.Now().UTC().String()
-	book.UpdatedAt = time.Now().UTC().String()
+	book.CreatedAt = api.clock.Now().UTC().String()
+	book.UpdatedAt = api.clock.Now().UTC().String()
 
 	err = api.bookService.Add(r.Context(), book.ID, book)
 	if err != nil {

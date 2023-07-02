@@ -147,7 +147,7 @@ func (api *APIHandler) Maintenance(w http.ResponseWriter, r *http.Request, ps ht
 	switch mstatus {
 	case "enable":
 		api.mode.reason = q.Get("msg")
-		api.mode.started = time.Now().UTC()
+		api.mode.started = api.clock.Now().UTC()
 		api.mode.enabled.Store(true)
 		response = map[string]interface{}{
 			"requestid":           requestID,
