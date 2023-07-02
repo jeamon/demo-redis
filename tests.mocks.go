@@ -47,10 +47,11 @@ type MockClocker struct {
 
 // NewMockClocker returns a mocked instance with fixed time.
 func NewMockClocker() *MockClocker {
-	return &MockClocker{time.Date(2023, 07, 02, 00, 00, 00, 000000000, time.UTC)}
+	return &MockClocker{time.Date(2023, 0o7, 0o2, 0o0, 0o0, 0o0, 0o00000000, time.UTC)}
 }
 
-// Now returns an already defined time to be used as mock.
+// Now returns an already defined time to be used as mock. This
+// equals to `Sun, 02 Jul 2023 00:00:00 UTC` in time.RFC1123 format.
 func (mck *MockClocker) Now() time.Time {
 	return mck.MockNow
 }
