@@ -123,7 +123,7 @@ func (api *APIHandler) PanicRecoveryMiddleware(next httprouter.Handle) httproute
 			if err := recover(); err != nil {
 				requestID := GetValueFromContext(r.Context(), ContextRequestID)
 				api.logger.Error("panic occurred", zap.String("request.id", requestID), zap.Any("error", err))
-				errResp := NewAPIError(requestID, http.StatusInternalServerError, "failed to process the request.", EmptyData)
+				errResp := NewAPIError(requestID, http.StatusInternalServerError, "failed to process the request.", struct{}{})
 				if err := WriteErrorResponse(w, errResp); err != nil {
 					api.logger.Error("failed to send error response", zap.String("request.id", requestID), zap.Error(err))
 				}
