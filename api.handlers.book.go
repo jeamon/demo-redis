@@ -4,52 +4,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"sync"
-	"sync/atomic"
 	"time"
 
 	"github.com/julienschmidt/httprouter"
 	"go.uber.org/zap"
 )
-
-var EmptyData = struct{}{}
-
-// Statistics holds app stats for ops.
-type Statistics struct {
-	version   string
-	container bool
-	runtime   string
-	platform  string
-	called    uint64
-	started   time.Time
-	status    map[int]uint64
-	mu        *sync.RWMutex
-}
-
-// Maintenance holds app maintenance mode infos.
-type Maintenance struct {
-	enabled atomic.Bool
-	reason  string
-	started time.Time
-}
-
-// APIHandler defines the API handler.
-type APIHandler struct {
-	logger      *zap.Logger
-	config      *Config
-	stats       *Statistics
-	mode        *Maintenance
-	bookService BookServiceProvider
-}
-
-// NewAPIHandler provides a new instance of APIHandler.
-func NewAPIHandler(logger *zap.Logger, config *Config, stats *Statistics, bs BookServiceProvider) *APIHandler {
-	m := &Maintenance{}
-	m.enabled.Store(false)
-	stats.status = make(map[int]uint64)
-	stats.mu = &sync.RWMutex{}
-	return &APIHandler{logger: logger, config: config, stats: stats, mode: m, bookService: bs}
-}
 
 // Index provides same details like `Status` handler by redirecting the request.
 func (api *APIHandler) Index(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {

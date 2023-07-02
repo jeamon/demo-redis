@@ -8,6 +8,7 @@ import (
 	"net/http/pprof"
 	"runtime"
 	"runtime/debug"
+	"sync"
 	"sync/atomic"
 	"time"
 
@@ -17,6 +18,25 @@ import (
 
 // export goroutines to be used by expvar handler.
 var goroutines = expvar.NewInt("goroutines")
+
+// Statistics holds app stats for ops.
+type Statistics struct {
+	version   string
+	container bool
+	runtime   string
+	platform  string
+	called    uint64
+	started   time.Time
+	status    map[int]uint64
+	mu        *sync.RWMutex
+}
+
+// Maintenance holds app maintenance mode infos.
+type Maintenance struct {
+	enabled atomic.Bool
+	reason  string
+	started time.Time
+}
 
 // OpsHandlerWrapper takes an http.Handler function and provides httprouter.Handle.
 func (api *APIHandler) OpsHandlerWrapper(h http.Handler) httprouter.Handle {
