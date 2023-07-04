@@ -55,11 +55,11 @@ func TestBoltStore_AddBook(t *testing.T) {
 	// Create a new book.
 	b := Book{ID: testBookID, Title: "Bolt test book title"}
 	err = bs.Add(context.TODO(), testBookID, b)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	// Verify book can be retrieved.
 	book, err := bs.GetOne(context.TODO(), testBookID)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, testBookID, book.ID)
 	assert.Equal(t, "Bolt test book title", book.Title)
 }
@@ -86,11 +86,11 @@ func TestBoltStore_GetOneBook_FoundBook(t *testing.T) {
 		UpdatedAt:   "2023-04-26 21:42:10.7604632 +0000 UTC",
 	}
 	err = bs.Add(context.TODO(), testBookID, b)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	// Verify book does exist.
 	book, err := bs.GetOne(context.TODO(), testBookID)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, b, book)
 }
 
@@ -108,7 +108,7 @@ func TestBoltStore_GetOneBook_ErrBookNotFound(t *testing.T) {
 	// Create a new book.
 	b := Book{ID: testBookID, Title: "Bolt test book title"}
 	err = bs.Add(context.TODO(), testBookID, b)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	// Verify another book does not exist.
 	book, err := bs.GetOne(context.TODO(), "b:1")
@@ -138,11 +138,11 @@ func TestBoltStore_DeleteBook(t *testing.T) {
 		UpdatedAt:   "2023-04-26 21:42:10.7604632 +0000 UTC",
 	}
 	err = bs.Add(context.TODO(), testBookID, b)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	// Delete the book.
 	err = bs.Delete(context.TODO(), testBookID)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	// Verify book does not exist.
 	book, err := bs.GetOne(context.TODO(), testBookID)
@@ -165,14 +165,14 @@ func TestBoltStore_GetAllBooks(t *testing.T) {
 	// Create some new books.
 	b0 := Book{ID: testBook0ID, Title: "Bolt test book 0 title"}
 	err = bs.Add(context.TODO(), testBook0ID, b0)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	b1 := Book{ID: testBook1ID, Title: "Bolt test book 1 title"}
 	err = bs.Add(context.TODO(), testBook1ID, b1)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	// Verify books can be retrieved.
 	books, err := bs.GetAll(context.TODO())
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.ElementsMatch(t, books, []Book{b0, b1})
 }
 
@@ -198,7 +198,7 @@ func TestBoltStore_UpdateBook_ExistingBook(t *testing.T) {
 		UpdatedAt:   "2023-04-26 21:42:10.7604632 +0000 UTC",
 	}
 	err = bs.Add(context.TODO(), testBookID, b)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	// Modify existing book details and update.
 	newBook := b
@@ -206,12 +206,12 @@ func TestBoltStore_UpdateBook_ExistingBook(t *testing.T) {
 	newBook.Price = "20$"
 	newBook.UpdatedAt = time.Now().UTC().String()
 	book, err := bs.Update(context.TODO(), testBookID, newBook)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, book, newBook)
 
 	// Check if book was updated.
 	book, err = bs.GetOne(context.TODO(), testBookID)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, book, newBook)
 }
 
@@ -240,11 +240,11 @@ func TestBoltStore_UpdateBook_NotExistingBook(t *testing.T) {
 
 	// Modify existing book details and update.
 	book, err := bs.Update(context.TODO(), testBookID, b)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, b, book)
 
 	// Check if book was added.
 	book, err = bs.GetOne(context.TODO(), testBookID)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, b, book)
 }
