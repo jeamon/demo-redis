@@ -26,22 +26,22 @@ func TestStatusHandler(t *testing.T) {
 	res := w.Result()
 	defer res.Body.Close()
 	data, err := io.ReadAll(res.Body)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, http.StatusOK, res.StatusCode)
 	assert.Equal(t, "application/json; charset=UTF-8", res.Header.Get("Content-Type"))
 	m := make(map[string]interface{})
 	err = json.Unmarshal(data, &m)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	_, ok := m["requestid"]
 	assert.True(t, ok)
 
 	v, ok := m["status"]
-	assert.True(t, ok)
+	require.True(t, ok)
 	assert.Equal(t, "up & running since 0 mins", v)
 
 	v, ok = m["message"]
-	assert.True(t, ok)
+	require.True(t, ok)
 	assert.Equal(t, v, "Hello. Books store api is available. Enjoy :)")
 }
 
@@ -76,24 +76,24 @@ func TestCreateBookHandler(t *testing.T) {
 
 		resultMap := make(map[string]interface{})
 		err = json.Unmarshal(data, &resultMap)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 
 		_, ok := resultMap["requestid"]
 		assert.True(t, ok)
 
 		v, ok := resultMap["status"]
-		assert.True(t, ok)
+		require.True(t, ok)
 		assert.Equal(t, float64(http.StatusCreated), v)
 
 		v, ok = resultMap["message"]
-		assert.True(t, ok)
+		require.True(t, ok)
 		assert.Equal(t, "Book created successfully.", v)
 
 		v, ok = resultMap["data"]
 		assert.True(t, ok)
 
 		bookMap, ok := v.(map[string]interface{})
-		assert.True(t, ok)
+		require.True(t, ok)
 		assert.Equal(t, "Test book title", bookMap["title"])
 		assert.Equal(t, "Test book description", bookMap["description"])
 		assert.Equal(t, "Jerome Amon", bookMap["author"])
@@ -120,15 +120,15 @@ func TestCreateBookHandler(t *testing.T) {
 		assert.Equal(t, http.StatusInternalServerError, res.StatusCode)
 		assert.Equal(t, "application/json; charset=UTF-8", res.Header.Get("Content-Type"))
 		data, err := io.ReadAll(res.Body)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.Contains(t, string(data), `{"requestid":"","status":500,"message":"failed to create the book"`)
 		resultMap := make(map[string]interface{})
 		err = json.Unmarshal(data, &resultMap)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		v, ok := resultMap["data"]
-		assert.True(t, ok)
+		require.True(t, ok)
 		bookMap, ok := v.(map[string]interface{})
-		assert.True(t, ok)
+		require.True(t, ok)
 		assert.Equal(t, "Test book title", bookMap["title"])
 		assert.Equal(t, "Test book description", bookMap["description"])
 		assert.Equal(t, "Jerome Amon", bookMap["author"])
@@ -147,7 +147,7 @@ func TestCreateBookHandler(t *testing.T) {
 		assert.Equal(t, http.StatusBadRequest, res.StatusCode)
 		assert.Equal(t, "application/json; charset=UTF-8", res.Header.Get("Content-Type"))
 		data, err := io.ReadAll(res.Body)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		expected := `{"requestid":"", "status":400, "message":"failed to create the book",
 		"data":{"id":"", "title":"", "description":"Test book description", "author":"Jerome Amon", "price":"10$", "createdAt":"", "updatedAt":""}}`
 		assert.JSONEq(t, expected, string(data))
@@ -184,7 +184,7 @@ func TestCreateBookHandler(t *testing.T) {
 				assert.Equal(t, tc.status, res.StatusCode)
 				assert.Equal(t, "application/json; charset=UTF-8", res.Header.Get("Content-Type"))
 				data, err := io.ReadAll(res.Body)
-				assert.NoError(t, err)
+				require.NoError(t, err)
 				assert.JSONEq(t, tc.expected, string(data))
 			})
 		}
@@ -228,7 +228,7 @@ func TestDeleteOneBook_MissingBook(t *testing.T) {
 			assert.Equal(t, http.StatusNotFound, res.StatusCode)
 			assert.Equal(t, "application/json; charset=UTF-8", res.Header.Get("Content-Type"))
 			data, err := io.ReadAll(res.Body)
-			assert.NoError(t, err)
+			require.NoError(t, err)
 			expected := `{"requestid":"", "status":404, "message":"book does not exist",
 				"data":{"id":"", "title":"", "description":"", "author":"", "price":"", "createdAt":"", "updatedAt":""}}`
 			assert.JSONEq(t, expected, string(data))
