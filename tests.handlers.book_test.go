@@ -15,6 +15,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/zap"
+	"go.uber.org/zap/zaptest/observer"
 )
 
 // TestStatusHandler ensures api handler can provides its status.
@@ -108,13 +109,24 @@ func TestCreateBookHandler(t *testing.T) {
 				return errors.New("storage failure")
 			},
 		}
+		observedZapCore, observedLogs := observer.New(zap.ErrorLevel)
+		observedLogger := zap.New(observedZapCore)
 		bs = NewBookService(zap.NewNop(), nil, NewMockClocker(), mockRepo)
-		api = NewAPIHandler(zap.NewNop(), nil, &Statistics{started: NewMockClocker().Now()}, NewMockClocker(), bs)
+		api = NewAPIHandler(observedLogger, nil, &Statistics{started: NewMockClocker().Now()}, NewMockClocker(), bs)
 
 		payload := `{"title":"Test book title", "description":"Test book description", "author":"Jerome Amon", "price":"10$"}`
 		req := httptest.NewRequest(http.MethodPost, "/v1/books", bytes.NewBuffer([]byte(payload)))
 		w := httptest.NewRecorder()
 		api.CreateBook(w, req, httprouter.Params{})
+
+		require.Equal(t, 1, observedLogs.Len())
+		log := observedLogs.All()[0]
+		assert.Equal(t, "failed to create book", log.Message)
+		assert.ElementsMatch(t, []zap.Field{
+			zap.String("request.id", ""),
+			zap.Error(errors.New("storage failure")),
+		}, log.Context)
+
 		res := w.Result()
 		defer res.Body.Close()
 		assert.Equal(t, http.StatusInternalServerError, res.StatusCode)
@@ -176,9 +188,21 @@ func TestCreateBookHandler(t *testing.T) {
 
 		for _, tc := range testCases {
 			t.Run(tc.name, func(t *testing.T) {
+				observedZapCore, observedLogs := observer.New(zap.ErrorLevel)
+				observedLogger := zap.New(observedZapCore)
+				api = NewAPIHandler(observedLogger, nil, &Statistics{started: NewMockClocker().Now()}, NewMockClocker(), bs)
 				req := httptest.NewRequest(http.MethodPost, "/v1/books", bytes.NewBuffer(tc.payload))
 				w := httptest.NewRecorder()
 				api.CreateBook(w, req, httprouter.Params{})
+
+				require.Equal(t, 1, observedLogs.Len())
+				log := observedLogs.All()[0]
+				assert.Equal(t, "failed to create book", log.Message)
+				assert.ElementsMatch(t, []zap.Field{
+					zap.String("request.id", ""),
+					zap.Error(missingFieldError("title")),
+				}, log.Context)
+
 				res := w.Result()
 				defer res.Body.Close()
 				assert.Equal(t, tc.status, res.StatusCode)
