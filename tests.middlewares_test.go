@@ -130,7 +130,7 @@ func TestMaintenanceModeMiddleware(t *testing.T) {
 		res := w.Result()
 		defer res.Body.Close()
 		data, err := io.ReadAll(res.Body)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		expected := `{"message":"service currently unvailable.","reason":"ongoing maintenance.", "since":"Sun, 02 Jul 2023 00:00:00 UTC"}`
 		assert.JSONEq(t, expected, string(data))
 	})
