@@ -56,3 +56,18 @@ func NewMockClocker() *MockClocker {
 func (mck *MockClocker) Now() time.Time {
 	return mck.MockNow
 }
+
+// MockUIDGenerator implements a fake UIDGenerator.
+type MockUIDGenerator struct {
+	MockObjectID string
+}
+
+// NewMockUIDGenerator returns a mocked instance with fixed id.
+func NewMockUIDGenerator() *MockUIDGenerator {
+	return &MockUIDGenerator{"abc"}
+}
+
+// Generate constructs a predictable id to be used as mock.
+func (mg *MockUIDGenerator) Generate(prefix string) string {
+	return prefix + ":" + mg.MockObjectID
+}
