@@ -52,7 +52,7 @@ func (api *APIHandler) CreateBook(w http.ResponseWriter, r *http.Request, _ http
 		return
 	}
 
-	book.ID = GenerateID(BookIDPrefix)
+	book.ID = api.uidGenerator.Generate(BookIDPrefix)
 	book.CreatedAt = api.clock.Now().UTC().String()
 	book.UpdatedAt = api.clock.Now().UTC().String()
 

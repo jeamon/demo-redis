@@ -97,7 +97,7 @@ func (api *APIHandler) RequestsCounterMiddleware(next httprouter.Handle) httprou
 // RequestIDMiddleware generates and add a unique id to the request context.
 func (api *APIHandler) RequestIDMiddleware(next httprouter.Handle) httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-		requestID := GenerateID(RequestIDPrefix)
+		requestID := api.uidGenerator.Generate(RequestIDPrefix)
 		ctx := context.WithValue(r.Context(), ContextRequestID, requestID)
 		r = r.WithContext(ctx)
 		next(w, r, ps)
