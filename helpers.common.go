@@ -8,8 +8,6 @@ import (
 	"net/http"
 	"os"
 	"strings"
-
-	"github.com/gofrs/uuid"
 )
 
 var ErrBookNotFound = errors.New("book not found")
@@ -28,12 +26,6 @@ const (
 
 func (m missingFieldError) Error() string {
 	return string(m) + " is required"
-}
-
-// GenerateID provides a random uid.
-func GenerateID(prefix string) string {
-	id, _ := uuid.NewV4()
-	return prefix + ":" + id.String()
 }
 
 // GetValueFromContext returns the value of a given key in the context
