@@ -22,7 +22,7 @@ import (
 func TestStatusHandler(t *testing.T) {
 	req := httptest.NewRequest(http.MethodGet, "/status", nil)
 	w := httptest.NewRecorder()
-	api := NewAPIHandler(zap.NewNop(), nil, &Statistics{started: NewMockClocker().Now()}, NewMockClocker(), nil)
+	api := NewAPIHandler(zap.NewNop(), nil, &Statistics{started: NewMockClocker().Now()}, NewMockClocker(), NewMockUIDGenerator(), nil)
 	api.Status(w, req, httprouter.Params{})
 	res := w.Result()
 	defer res.Body.Close()
@@ -54,7 +54,7 @@ func TestCreateBookHandler(t *testing.T) {
 		},
 	}
 	bs := NewBookService(zap.NewNop(), nil, NewMockClocker(), mockRepo)
-	api := NewAPIHandler(zap.NewNop(), nil, &Statistics{started: NewMockClocker().Now()}, NewMockClocker(), bs)
+	api := NewAPIHandler(zap.NewNop(), nil, &Statistics{started: NewMockClocker().Now()}, NewMockClocker(), NewMockUIDGenerator(), bs)
 
 	t.Run("should pass: valid payload", func(t *testing.T) {
 		book := Book{
@@ -112,7 +112,7 @@ func TestCreateBookHandler(t *testing.T) {
 		observedZapCore, observedLogs := observer.New(zap.ErrorLevel)
 		observedLogger := zap.New(observedZapCore)
 		bs = NewBookService(zap.NewNop(), nil, NewMockClocker(), mockRepo)
-		api = NewAPIHandler(observedLogger, nil, &Statistics{started: NewMockClocker().Now()}, NewMockClocker(), bs)
+		api = NewAPIHandler(observedLogger, nil, &Statistics{started: NewMockClocker().Now()}, NewMockClocker(), NewMockUIDGenerator(), bs)
 
 		payload := `{"title":"Test book title", "description":"Test book description", "author":"Jerome Amon", "price":"10$"}`
 		req := httptest.NewRequest(http.MethodPost, "/v1/books", bytes.NewBuffer([]byte(payload)))
@@ -190,7 +190,7 @@ func TestCreateBookHandler(t *testing.T) {
 			t.Run(tc.name, func(t *testing.T) {
 				observedZapCore, observedLogs := observer.New(zap.ErrorLevel)
 				observedLogger := zap.New(observedZapCore)
-				api = NewAPIHandler(observedLogger, nil, &Statistics{started: NewMockClocker().Now()}, NewMockClocker(), bs)
+				api = NewAPIHandler(observedLogger, nil, &Statistics{started: NewMockClocker().Now()}, NewMockClocker(), NewMockUIDGenerator(), bs)
 				req := httptest.NewRequest(http.MethodPost, "/v1/books", bytes.NewBuffer(tc.payload))
 				w := httptest.NewRecorder()
 				api.CreateBook(w, req, httprouter.Params{})
@@ -219,7 +219,7 @@ func TestDeleteOneBook_MissingBook(t *testing.T) {
 	helper := func(t *testing.T, repo BookStorage) *http.Response {
 		t.Helper()
 		bs := NewBookService(zap.NewNop(), nil, NewMockClocker(), repo)
-		api := NewAPIHandler(zap.NewNop(), nil, &Statistics{started: time.Now()}, NewMockClocker(), bs)
+		api := NewAPIHandler(zap.NewNop(), nil, &Statistics{started: time.Now()}, NewMockClocker(), NewMockUIDGenerator(), bs)
 		missingBookID := "b:cb8f2136-fae4-4200-85d9-3533c7f8c70d"
 		req := httptest.NewRequest(http.MethodDelete, "/v1/books/"+missingBookID, nil)
 		w := httptest.NewRecorder()
