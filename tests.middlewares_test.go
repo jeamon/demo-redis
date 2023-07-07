@@ -150,8 +150,7 @@ func TestRequestIDMiddleware(t *testing.T) {
 	wrapped := api.RequestIDMiddleware(handler)
 	wrapped(w, req, nil)
 	assert.Equal(t, true, called)
-	assert.NotEmpty(t, id)
-	assert.Contains(t, id, RequestIDPrefix+":")
+	assert.Equal(t, RequestIDPrefix+":"+"abc", id)
 }
 
 // TestAddLoggerMiddleware ensures custom logger with exact fields is injected into the request context.
