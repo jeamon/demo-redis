@@ -35,7 +35,7 @@ func TestStatusHandler(t *testing.T) {
 	require.NoError(t, err)
 
 	_, ok := m["requestid"]
-	assert.True(t, ok)
+	require.True(t, ok)
 
 	v, ok := m["status"]
 	require.True(t, ok)
@@ -95,6 +95,7 @@ func TestCreateBookHandler(t *testing.T) {
 
 		bookMap, ok := v.(map[string]interface{})
 		require.True(t, ok)
+		assert.Equal(t, "b:abc", bookMap["id"])
 		assert.Equal(t, "Test book title", bookMap["title"])
 		assert.Equal(t, "Test book description", bookMap["description"])
 		assert.Equal(t, "Jerome Amon", bookMap["author"])
