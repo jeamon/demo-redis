@@ -93,6 +93,14 @@ func (api *APIHandler) GetAllBooks(w http.ResponseWriter, r *http.Request, _ htt
 func (api *APIHandler) GetOneBook(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	requestID := GetValueFromContext(r.Context(), ContextRequestID)
 	id := ps.ByName("id")
+	if ok := api.idsHandler.IsValid(id, BookIDPrefix); !ok {
+		api.logger.Error("book id provided is not valid", zap.String("book.id", id), zap.String("request.id", requestID))
+		errResp := NewAPIError(requestID, http.StatusBadRequest, "book id provided is not valid", Book{})
+		if err := WriteErrorResponse(w, errResp); err != nil {
+			api.logger.Error("failed to send error response", zap.String("request.id", requestID), zap.Error(err))
+		}
+		return
+	}
 	book, err := api.bookService.GetOne(r.Context(), id)
 	if err == ErrBookNotFound {
 		api.logger.Error("book does not exist", zap.String("book.id", id), zap.String("request.id", requestID))
@@ -120,6 +128,14 @@ func (api *APIHandler) GetOneBook(w http.ResponseWriter, r *http.Request, ps htt
 func (api *APIHandler) DeleteOneBook(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	requestID := GetValueFromContext(r.Context(), ContextRequestID)
 	id := ps.ByName("id")
+	if ok := api.idsHandler.IsValid(id, BookIDPrefix); !ok {
+		api.logger.Error("book id provided is not valid", zap.String("book.id", id), zap.String("request.id", requestID))
+		errResp := NewAPIError(requestID, http.StatusBadRequest, "book id provided is not valid", Book{})
+		if err := WriteErrorResponse(w, errResp); err != nil {
+			api.logger.Error("failed to send error response", zap.String("request.id", requestID), zap.Error(err))
+		}
+		return
+	}
 	book, err := api.bookService.GetOne(r.Context(), id)
 	if err == ErrBookNotFound {
 		api.logger.Error("book does not exist", zap.String("book.id", id), zap.String("request.id", requestID))

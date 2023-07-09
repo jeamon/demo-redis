@@ -88,7 +88,7 @@ func TestSetupBookRoutes(t *testing.T) {
 		},
 	}
 	bs := NewBookService(zap.NewNop(), nil, NewMockClocker(), mockRepo)
-	api := NewAPIHandler(zap.NewNop(), nil, &Statistics{started: NewMockClocker().Now()}, NewMockClocker(), nil, bs)
+	api := NewAPIHandler(zap.NewNop(), nil, &Statistics{started: NewMockClocker().Now()}, NewMockClocker(), NewMockUIDHandler("", true), bs)
 	router := httprouter.New()
 	m := &MiddlewareMap{public: (&Middlewares{}).Chain, ops: (&Middlewares{}).Chain}
 	api.SetupBookRoutes(router, m)
