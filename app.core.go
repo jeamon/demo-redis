@@ -75,7 +75,7 @@ func NewApp() (AppProvider, error) {
 			platform:  runtime.GOOS + "/" + runtime.GOARCH,
 		},
 		NewClock(),
-		NewObjectIDGenerator(),
+		NewIDsHandler(),
 		bookService,
 	)
 
