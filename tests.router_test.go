@@ -88,7 +88,7 @@ func TestSetupBookRoutes(t *testing.T) {
 		},
 	}
 	bs := NewBookService(zap.NewNop(), nil, NewMockClocker(), mockRepo)
-	api := NewAPIHandler(zap.NewNop(), nil, &Statistics{started: NewMockClocker().Now()}, NewMockClocker(), NewMockUIDGenerator(), bs)
+	api := NewAPIHandler(zap.NewNop(), nil, &Statistics{started: NewMockClocker().Now()}, NewMockClocker(), nil, bs)
 	router := httprouter.New()
 	m := &MiddlewareMap{public: (&Middlewares{}).Chain, ops: (&Middlewares{}).Chain}
 	api.SetupBookRoutes(router, m)
@@ -152,7 +152,7 @@ func TestSetupOpsRoutes(t *testing.T) {
 
 	config := &Config{ProfilerEndpointsEnable: false}
 	bs := NewBookService(zap.NewNop(), config, NewMockClocker(), nil)
-	api := NewAPIHandler(zap.NewNop(), config, &Statistics{started: NewMockClocker().Now()}, NewMockClocker(), NewMockUIDGenerator(), bs)
+	api := NewAPIHandler(zap.NewNop(), config, &Statistics{started: NewMockClocker().Now()}, NewMockClocker(), nil, bs)
 	router := httprouter.New()
 	m := &MiddlewareMap{public: (&Middlewares{}).Chain, ops: (&Middlewares{}).Chain}
 	api.SetupOpsRoutes(router, m)
@@ -230,7 +230,7 @@ func TestSetupRoutes(t *testing.T) {
 
 	config := &Config{OpsEndpointsEnable: false, ProfilerEndpointsEnable: false}
 	bs := NewBookService(zap.NewNop(), config, NewMockClocker(), nil)
-	api := NewAPIHandler(zap.NewNop(), config, &Statistics{started: NewMockClocker().Now()}, NewMockClocker(), NewMockUIDGenerator(), bs)
+	api := NewAPIHandler(zap.NewNop(), config, &Statistics{started: NewMockClocker().Now()}, NewMockClocker(), nil, bs)
 	m := &MiddlewareMap{public: (&Middlewares{}).Chain, ops: (&Middlewares{}).Chain}
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {

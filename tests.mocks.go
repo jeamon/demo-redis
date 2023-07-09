@@ -57,17 +57,23 @@ func (mck *MockClocker) Now() time.Time {
 	return mck.MockNow
 }
 
-// MockUIDGenerator implements a fake UIDGenerator.
-type MockUIDGenerator struct {
-	MockObjectID string
+// MockUIDHandler implements a fake UIDHandler.
+type MockUIDHandler struct {
+	MockedUID string
+	Valid     bool
 }
 
-// NewMockUIDGenerator returns a mocked instance with fixed id.
-func NewMockUIDGenerator() *MockUIDGenerator {
-	return &MockUIDGenerator{"abc"}
+// NewMockUIDHandler returns a mocked instance with predictable id.
+func NewMockUIDHandler(id string, valid bool) *MockUIDHandler {
+	return &MockUIDHandler{MockedUID: id, Valid: valid}
 }
 
 // Generate constructs a predictable id to be used as mock.
-func (mg *MockUIDGenerator) Generate(prefix string) string {
-	return prefix + ":" + mg.MockObjectID
+func (muid *MockUIDHandler) Generate(prefix string) string {
+	return prefix + ":" + muid.MockedUID
+}
+
+// IsValid mocks IsValid behavior by providing configured status.
+func (muid *MockUIDHandler) IsValid(id, prefix string) bool {
+	return muid.Valid
 }
