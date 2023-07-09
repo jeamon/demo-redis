@@ -22,7 +22,7 @@ func startRedisDockerContainer(t *testing.T) (string, func()) {
 
 	err = pool.Client.Ping()
 	if err != nil {
-		t.Fatalf("Could not connect to Docker: %+v", err)
+		t.Skipf("Skiped. Could not connect to Docker: %+v", err)
 	}
 
 	resource, err := pool.Run("redis", "7.0.10-alpine", nil)
