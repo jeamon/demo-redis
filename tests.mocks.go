@@ -74,6 +74,6 @@ func (muid *MockUIDHandler) Generate(prefix string) string {
 }
 
 // IsValid mocks IsValid behavior by providing configured status.
-func (muid *MockUIDHandler) IsValid(id, prefix string) bool {
+func (muid *MockUIDHandler) IsValid(_, _ string) bool {
 	return muid.Valid
 }
