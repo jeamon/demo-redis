@@ -56,6 +56,14 @@ func startRedisDockerContainer(t *testing.T) (string, func()) {
 	return addr, destroyFunc
 }
 
+// Ensure concrete type redisBookStorage satisfies BookStorage interface.
+func TestRedisBookStorageImplementsBookStorageInterface(t *testing.T) {
+	var i interface{} = new(redisBookStorage)
+	if _, ok := i.(BookStorage); !ok {
+		t.Fatalf("expected %T to implement BookStorage", i)
+	}
+}
+
 func TestRedisStore(t *testing.T) {
 	addr, destroyFunc := startRedisDockerContainer(t)
 	defer destroyFunc()

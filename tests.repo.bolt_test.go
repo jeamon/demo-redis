@@ -41,6 +41,14 @@ func (bs *boltBookStorage) closeTestBoltStore() error {
 	return bs.Close()
 }
 
+// Ensure concrete type boltBookStorage satisfies BookStorage interface.
+func TestBoltBookStorageImplementsBookStorageInterface(t *testing.T) {
+	var i interface{} = new(boltBookStorage)
+	if _, ok := i.(BookStorage); !ok {
+		t.Fatalf("expected %T to implement BookStorage", i)
+	}
+}
+
 // Ensure bolt store can insert a new book.
 func TestBoltStore_AddBook(t *testing.T) {
 	bs, err := newTestBoltStore()
