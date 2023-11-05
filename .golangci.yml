@@ -65,11 +65,12 @@ issues:
   exclude-rules:
     - source: "(noinspection|TODO)"
       linters: [ godot ]
-     # Allow reuse of string literals and globals in test files.
+     # Allow reuse of string literals and duplicate code and globals in test files.
     - path: _test.go
       linters:
         - gochecknoglobals
         - goconst
+        - dupl
     # Exclude the funlen linter for tests.
     - linters:
       - funlen
