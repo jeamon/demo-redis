@@ -1,5 +1,11 @@
 # demo-redis
 
+[![Build Status](https://github.com/jeamon/demo-redis/actions/workflows/tests.yml/badge.svg)](https://github.com/jeamon/demo-redis/actions)
+[![Go Report Card](https://goreportcard.com/badge/github.com/jeamon/demo-redis)](https://goreportcard.com/report/github.com/jeamon/demo-redis)
+[![codecov](https://codecov.io/gh/jeamon/demo-redis/graph/badge.svg)](https://codecov.io/gh/jeamon/demo-redis)
+![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/jeamon/demo-redis)
+[![MIT License](https://img.shields.io/github/license/jeamon/demo-redis)](https://github.com/jeamon/demo-redis/blob/main/LICENSE)
+
 This is a small go-based project to craft an `API` Backend which persist to `Redis`. It can be run on bare-metal computer as well
 in containerized environment with `Docker` and `Docker-Compose`. Keep watching for more features updates like `redis-based pubsub`  async event for persisting data to file-like storage such as `BoltDB` and authenticate & authorize with `JWT (Json Web Token)` and log monitoring with `Loki/Grafana` and metrics monitoring with `Prometheus/Grafana` and tracing with `OpenTelemetry/Tempo`. The project mimic a DDD approach but in order to keep it minimal (avoid folders/packages) - I crafted it with some flat contextual files. Based on each file name, you can easily restructure to packages-based style.
 

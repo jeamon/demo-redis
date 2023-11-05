@@ -1,6 +1,6 @@
 default: help
 
-SHELL:= /usr/bin/bash -e
+SHELL:=/usr/bin/env bash
 
 BINDIR := $(CURDIR)/bin
 BINNAME ?= app.demo.redis
@@ -43,7 +43,7 @@ info: ## Display useful infos.
 
 .PHONY: install-linter
 install-linter: ## Install golangci-lint tool.
-	curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v${GOLNAGCI_LINT_VERSION}
+	curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v${GOLANGCI_LINT_VERSION}
 	
 .PHONY: lint
 lint: ## Updates modules and execute linters.
@@ -63,6 +63,10 @@ clean.build: ## Remove temporary and cached builds files
 .PHONY: clean.all
 clean.all: clean.test clean.build ## Remove temporary and cached builds files
 	rm -rf ./bin
+
+.PHONY: ci.test
+ci.test: ## Run unit tests only and output coverage.
+	go test -v -count=1 -coverprofile=coverage.out ./... && go tool cover -func=coverage.out
 
 .PHONY: test.unit
 test.unit: clean.test ## Remove cache and Run unit tests only.
@@ -87,7 +91,7 @@ coverage.console: clean.test ## Testing coverage and view stats in console.
 coverage.html: clean.test ## Testing coverage and view stats in browser.
 	go test -v -coverprofile=coverage.out ./... && go tool cover -html=coverage.out
 
-.PHONY: coverage.all ## Ttesting coverage and view stats both in console and browser.
+.PHONY: coverage.all ## Testing coverage and view stats both in console and browser.
 coverage.all: clean.test coverage.console coverage.html
 
 .PHONY: local.build

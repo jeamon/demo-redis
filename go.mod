@@ -1,6 +1,6 @@
 module github.com/jeamon/demo-redis
 
-go 1.20
+go 1.21
 
 require (
 	github.com/boltdb/bolt v1.3.1
