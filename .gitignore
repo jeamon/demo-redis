@@ -24,5 +24,9 @@ app.demo.redis
 logs/
 *.log
 
+# BoltDB related files
+*.bolt
+*.lock
+
 # Personal tasks list. 
 TODO.txt

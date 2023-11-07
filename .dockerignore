@@ -22,6 +22,7 @@ app.demo.redis
 
 # Output of the go coverage tool
 *.out
+*.txt
 
 # vscode IDE specific
 .vscode
@@ -29,3 +30,7 @@ app.demo.redis
 # log folder and files
 logs/
 *.log
+
+# BoltDB related files
+*.bolt
+*.lock
