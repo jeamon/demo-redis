@@ -11,8 +11,8 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/go-redis/redis/v9"
 	"github.com/julienschmidt/httprouter"
+	"github.com/redis/go-redis/v9"
 	"go.uber.org/zap"
 	"golang.org/x/sync/errgroup"
 )
@@ -24,11 +24,12 @@ type AppProvider interface {
 }
 
 type App struct {
-	logger      *zap.Logger
-	config      *Config
-	server      *http.Server
-	redisClient *redis.Client
-	cleanups    []func()
+	logger         *zap.Logger
+	config         *Config
+	server         *http.Server
+	redisClient    *redis.Client
+	cleanups       []func()
+	queueConsumers []func(context.Context) error
 }
 
 // NewApp provides an instance of App.
@@ -39,7 +40,7 @@ func NewApp() (AppProvider, error) {
 		return nil, fmt.Errorf("failed to setup app configuration: %s", err)
 	}
 
-	// Ensure the logs folder exists and Setup the logging module.
+	// ensure the logs folder exists and Setup the logging module.
 	err = os.MkdirAll(filepath.Dir(config.LogFile), 0o700)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create logging folder: %s", err)
@@ -55,15 +56,24 @@ func NewApp() (AppProvider, error) {
 	}
 	logger, flusher := SetupLogging(config, logFile)
 
-	// Setup the connection to redis server.
+	// Setup the connection to redis and boltDB servers.
 	redisClient, err := GetRedisClient(config)
 	if err != nil {
 		return app, fmt.Errorf("failed to connect to redis server: %s", err)
 	}
 
-	// Setup the repository and api services and routing..
+	boltDBClient, err := GetBoltDBClient(config)
+	if err != nil {
+		return app, fmt.Errorf("failed to connect to boltDB server: %s", err)
+	}
+	boltBookStorage := NewBoltBookStorage(logger, &config.BoltDB, boltDBClient)
+
+	// Setup the repository and api services and routing.
 	redisBookStorage := NewRedisBookStorage(logger, redisClient)
-	bookService := NewBookService(logger, config, NewClock(), redisBookStorage)
+	redisQueue := NewRedisQueue(redisClient)
+	boltDBConsumer := NewBoltDBConsumer(logger, redisQueue, boltBookStorage)
+
+	bookService := NewBookService(logger, config, NewClock(), redisBookStorage, redisQueue)
 	apiService := NewAPIHandler(
 		logger,
 		config,
@@ -109,6 +119,10 @@ func NewApp() (AppProvider, error) {
 		MaxHeaderBytes: 1 << 20, // Max headers size : 1MB
 	}
 
+	boltDBConsume := func(ctx context.Context) error {
+		return boltDBConsumer.Consume(ctx, CreateQueue, UpdateQueue, DeleteQueue)
+	}
+
 	return &App{
 		logger:      logger,
 		config:      config,
@@ -118,6 +132,7 @@ func NewApp() (AppProvider, error) {
 			flusher,
 			closer,
 		},
+		queueConsumers: []func(ctx context.Context) error{boltDBConsume},
 	}, nil
 }
 
@@ -129,6 +144,7 @@ func (app *App) Run() error {
 
 	g, gCtx := errgroup.WithContext(nCtx)
 
+	g.Go(app.ConsumeQueues(gCtx, g))
 	g.Go(app.Serve())
 	g.Go(app.Stop(nCtx, gCtx))
 
@@ -192,6 +208,20 @@ func (app *App) Stop(nCtx, gCtx context.Context) func() error {
 
 		if err != nil && err != http.ErrServerClosed {
 			app.logger.Info("api server going to force shutdown", zap.Error(app.server.Close()))
+		}
+		_ = app.redisClient.Close()
+		return nil
+	}
+}
+
+// ConsumeQueues runs all queue consumers into separate controlled goroutines.
+func (app *App) ConsumeQueues(gCtx context.Context, g *errgroup.Group) func() error {
+	return func() error {
+		for _, consume := range app.queueConsumers {
+			f := func() error {
+				return consume(gCtx)
+			}
+			g.Go(f)
 		}
 		return nil
 	}

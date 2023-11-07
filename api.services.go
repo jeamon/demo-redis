@@ -19,18 +19,23 @@ type BookService struct {
 	config  *Config
 	clock   Clocker
 	storage BookStorage
+	queue   Queuer
 }
 
-func NewBookService(logger *zap.Logger, config *Config, clock Clocker, storage BookStorage) BookServiceProvider {
+func NewBookService(logger *zap.Logger, config *Config, clock Clocker, storage BookStorage, queue Queuer) BookServiceProvider {
 	return &BookService{
 		logger:  logger,
 		config:  config,
 		clock:   clock,
 		storage: storage,
+		queue:   queue,
 	}
 }
 
 func (bs *BookService) Add(ctx context.Context, id string, book Book) error {
+	if err := bs.queue.Push(ctx, CreateQueue, book); err != nil {
+		bs.logger.Error("service: failed to push book to queue", zap.String("qid", CreateQueue), zap.Error(err))
+	}
 	return bs.storage.Add(ctx, id, book)
 }
 
@@ -40,10 +45,17 @@ func (bs *BookService) GetOne(ctx context.Context, id string) (Book, error) {
 }
 
 func (bs *BookService) Delete(ctx context.Context, id string) error {
+	if err := bs.queue.Push(ctx, DeleteQueue, Book{ID: id}); err != nil {
+		bs.logger.Error("service: failed to push to queue", zap.String("qid", DeleteQueue), zap.Error(err))
+	}
 	return bs.storage.Delete(ctx, id)
 }
 
 func (bs *BookService) Update(ctx context.Context, id string, book Book) (Book, error) {
+	if err := bs.queue.Push(ctx, UpdateQueue, book); err != nil {
+		bs.logger.Error("service: failed to push to queue", zap.String("qid", UpdateQueue), zap.Error(err))
+	}
+
 	book.UpdatedAt = bs.clock.Now().UTC().String()
 	return bs.storage.Update(ctx, id, book)
 }
