@@ -17,7 +17,7 @@ type boltBookStorage struct {
 
 // GetBoltClient setup the database and the bucket then provides a ready to use client.
 func GetBoltDBClient(config *Config) (*bolt.DB, error) {
-	db, err := bolt.Open(config.BoltDB.FilePath, 0o600, &bolt.Options{Timeout: config.BoltDB.Timeout})
+	db, err := bolt.Open(config.BoltDB.FilePath, 0o644, &bolt.Options{Timeout: config.BoltDB.Timeout})
 	if err != nil {
 		return nil, fmt.Errorf("failed to open the database, %v", err)
 	}
