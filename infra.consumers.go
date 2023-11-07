@@ -27,7 +27,7 @@ func (bc *boltDBConsumer) Consume(ctx context.Context, qids ...string) error {
 	for {
 		qid, book, err = bc.queue.Pop(ctx, qids...)
 		if err != nil && ctx.Err() != nil {
-			bc.logger.Info("consumer: queue pop call: context is done: exit", zap.String("reason", ctx.Err().Error()))
+			bc.logger.Info("consumer: exited", zap.String("reason", ctx.Err().Error()))
 			return nil
 		}
 

@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"os"
@@ -28,7 +29,7 @@ type App struct {
 	config         *Config
 	server         *http.Server
 	redisClient    *redis.Client
-	cleanups       []func()
+	cleanups       []func() error
 	queueConsumers []func(context.Context) error
 }
 
@@ -49,12 +50,13 @@ func NewApp() (AppProvider, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to create logging file: %s", err)
 	}
-	closer := func() {
+	logFileCloser := func() error {
 		if cerr := logFile.Close(); cerr != nil {
-			fmt.Println("error during closing of log file: ", cerr)
+			return fmt.Errorf("[close log file]: %w", cerr)
 		}
+		return nil
 	}
-	logger, flusher := SetupLogging(config, logFile)
+	logger, logsFlusher := SetupLogging(config, logFile)
 
 	// Setup the connection to redis and boltDB servers.
 	redisClient, err := GetRedisClient(config)
@@ -122,15 +124,14 @@ func NewApp() (AppProvider, error) {
 	boltDBConsume := func(ctx context.Context) error {
 		return boltDBConsumer.Consume(ctx, CreateQueue, UpdateQueue, DeleteQueue)
 	}
-
 	return &App{
 		logger:      logger,
 		config:      config,
 		server:      srv,
 		redisClient: redisClient,
-		cleanups: []func(){
-			flusher,
-			closer,
+		cleanups: []func() error{
+			logsFlusher,
+			logFileCloser,
 		},
 		queueConsumers: []func(ctx context.Context) error{boltDBConsume},
 	}, nil
@@ -138,7 +139,6 @@ func NewApp() (AppProvider, error) {
 
 // Run starts the api web server and a goroutine which is responsible to stop it.
 func (app *App) Run() error {
-	defer app.Clean()
 	nCtx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
 
@@ -154,14 +154,18 @@ func (app *App) Run() error {
 		zap.String("app.port", app.config.Server.Port),
 		zap.Error(err),
 	)
-	return err
+	errs := app.Clean()
+	return errors.Join(err, errs)
 }
 
-// Clean calls all registered cleanups functions.
-func (app *App) Clean() {
+// Clean calls all registered cleanups functions and returned aggregated errors.
+func (app *App) Clean() error {
+	var errs error
 	for _, f := range app.cleanups {
-		f()
+		ferr := f()
+		errs = errors.Join(errs, ferr)
 	}
+	return errs
 }
 
 // Serve starts the api web server. It returned error
@@ -209,7 +213,10 @@ func (app *App) Stop(nCtx, gCtx context.Context) func() error {
 		if err != nil && err != http.ErrServerClosed {
 			app.logger.Info("api server going to force shutdown", zap.Error(app.server.Close()))
 		}
-		_ = app.redisClient.Close()
+
+		if err := app.redisClient.Close(); err != nil {
+			app.logger.Info("error closing redis client", zap.Error(err))
+		}
 		return nil
 	}
 }

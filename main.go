@@ -7,10 +7,10 @@ import (
 func main() {
 	app, err := NewApp()
 	if err != nil {
-		log.Fatal("application failed to initialized: ", err)
+		log.Fatalf("app failed: %v", err)
 	}
 	err = app.Run()
 	if err != nil {
-		log.Fatal("application exited. check logs for more details.", err)
+		log.Printf("app exited: %v", err)
 	}
 }

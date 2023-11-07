@@ -17,7 +17,7 @@ const (
 // In production all logs are saved to the defined file. In development
 // the same logs are printed to standard output as well. It only adds
 // stacktrace to debug level logs. All logs come with commit & tag value.
-func SetupLogging(config *Config, logFile *os.File) (*zap.Logger, func()) {
+func SetupLogging(config *Config, logFile *os.File) (*zap.Logger, func() error) {
 	var logger *zap.Logger
 	if config.IsProduction {
 		zapConfig := zap.NewProductionEncoderConfig()
@@ -49,10 +49,11 @@ func SetupLogging(config *Config, logFile *os.File) (*zap.Logger, func()) {
 	}
 	logger = logger.With(zap.String("app.commit", config.GitCommit), zap.String("app.tag", config.GitTag), zap.String("app.built", config.BuildTime))
 
-	flusher := func() {
+	flusher := func() error {
 		if err := logger.Sync(); err != nil {
-			fmt.Println("error during flushing any buffered log entries:", err)
+			return fmt.Errorf("[flush logs]: %w", err)
 		}
+		return nil
 	}
 
 	return logger, flusher
