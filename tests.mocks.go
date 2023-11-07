@@ -77,3 +77,26 @@ func (muid *MockUIDHandler) Generate(prefix string) string {
 func (muid *MockUIDHandler) IsValid(_, _ string) bool {
 	return muid.Valid
 }
+
+type MockQueuer struct {
+	PushFunc func(ctx context.Context, qid string, book Book) error
+	PopFunc  func(ctx context.Context, qids ...string) (string, Book, error)
+}
+
+// Push mocks the behavior of book enqueuing into the queue.
+func (m *MockQueuer) Push(ctx context.Context, qid string, book Book) error {
+	return m.PushFunc(ctx, qid, book)
+}
+
+// Pop mocks the behavior of deuqueing a book from the queue.
+func (m *MockQueuer) Pop(ctx context.Context, qids ...string) (string, Book, error) {
+	return m.PopFunc(ctx, qids...)
+}
+
+type MockConsumer struct {
+	ConsumeFunc func(ctx context.Context, qids ...string)
+}
+
+func (m *MockConsumer) Consume(ctx context.Context, qids ...string) {
+	m.ConsumeFunc(ctx, qids...)
+}
