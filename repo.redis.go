@@ -24,8 +24,8 @@ func NewRedisBookStorage(logger *zap.Logger, client *redis.Client) BookStorage {
 	}
 }
 
-// GetRedisClient provides a ready to use redis client.
-func GetRedisClient(config *Config) (*redis.Client, error) {
+// NewRedisClient provides a ready to use redis client.
+func NewRedisClient(config *Config) (*redis.Client, error) {
 	client := redis.NewClient(&redis.Options{
 		Addr:         fmt.Sprintf("%s:%s", config.Redis.Host, config.Redis.Port),
 		DialTimeout:  config.Redis.DialTimeout,
@@ -40,7 +40,7 @@ func GetRedisClient(config *Config) (*redis.Client, error) {
 
 	// test connection.
 	if pong, err := client.Ping(context.Background()).Result(); pong != "PONG" || err != nil {
-		return client, fmt.Errorf("test connection failed: %v", err)
+		return nil, fmt.Errorf("redis: ping failed: %v", err)
 	}
 	return client, nil
 }

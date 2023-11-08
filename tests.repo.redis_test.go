@@ -44,12 +44,12 @@ func startRedisDockerContainer(t *testing.T) (string, func()) {
 	})
 
 	if err != nil {
-		t.Fatalf("Failed to ping Redis: %+v", err)
+		t.Fatalf("failed to ping redis: %+v", err)
 	}
 
 	destroyFunc := func() {
 		if err := pool.Purge(resource); err != nil {
-			t.Logf("Failed to purge resource: %+v", err)
+			t.Logf("failed to purge resource: %+v", err)
 		}
 	}
 

@@ -59,7 +59,7 @@ func NewApp() (AppProvider, error) {
 	logger, logsFlusher := SetupLogging(config, logFile)
 
 	// Setup the connection to redis and boltDB servers.
-	redisClient, err := GetRedisClient(config)
+	redisClient, err := NewRedisClient(config)
 	if err != nil {
 		return app, fmt.Errorf("failed to connect to redis server: %s", err)
 	}
