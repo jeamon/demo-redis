@@ -153,9 +153,9 @@ func (m *Middlewares) Chain(h httprouter.Handle) httprouter.Handle {
 func (api *APIHandler) MiddlewaresStacks() (*Middlewares, *Middlewares) {
 	middlewaresPublic := Middlewares{
 		api.PanicRecoveryMiddleware,
+		api.RequestIDMiddleware,
 		api.MaintenanceModeMiddleware,
 		api.RequestsCounterMiddleware,
-		api.RequestIDMiddleware,
 		api.AddLoggerMiddleware,
 		CORSMiddleware,
 		api.DurationMiddleware,
@@ -163,8 +163,8 @@ func (api *APIHandler) MiddlewaresStacks() (*Middlewares, *Middlewares) {
 
 	middlewaresOps := Middlewares{
 		api.PanicRecoveryMiddleware,
-		api.RequestsCounterMiddleware,
 		api.RequestIDMiddleware,
+		api.RequestsCounterMiddleware,
 		api.AddLoggerMiddleware,
 		CORSMiddleware,
 		api.DurationMiddleware,
