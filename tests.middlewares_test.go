@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -122,6 +123,7 @@ func TestMaintenanceModeMiddleware(t *testing.T) {
 		ts := NewMockClocker().Now()
 		api.mode.started = ts
 		api.mode.reason = "ongoing maintenance."
+		req = req.WithContext(context.WithValue(req.Context(), ContextRequestID, "abc"))
 		wrapped := api.MaintenanceModeMiddleware(handler)
 		wrapped(w, req, nil)
 		// target handler will not be called but the maintenance handler must kick-in.
@@ -131,7 +133,7 @@ func TestMaintenanceModeMiddleware(t *testing.T) {
 		defer res.Body.Close()
 		data, err := io.ReadAll(res.Body)
 		require.NoError(t, err)
-		expected := `{"message":"service currently unvailable.","reason":"ongoing maintenance.", "since":"Sun, 02 Jul 2023 00:00:00 UTC"}`
+		expected := `{"requestid":"abc","message":"service currently unvailable.","reason":"ongoing maintenance.", "since":"Sun, 02 Jul 2023 00:00:00 UTC"}`
 		assert.JSONEq(t, expected, string(data))
 	})
 }

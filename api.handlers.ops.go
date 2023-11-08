@@ -169,9 +169,10 @@ func (api *APIHandler) Maintenance(w http.ResponseWriter, r *http.Request, ps ht
 
 	case "show":
 		response = map[string]interface{}{
-			"message": "service currently unvailable.",
-			"reason":  api.mode.reason,
-			"since":   api.mode.started.Format(time.RFC1123),
+			"requestid": requestID,
+			"message":   "service currently unvailable.",
+			"reason":    api.mode.reason,
+			"since":     api.mode.started.Format(time.RFC1123),
 		}
 		w.WriteHeader(http.StatusServiceUnavailable)
 	}
