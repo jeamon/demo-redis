@@ -29,7 +29,7 @@ func NewBookService(logger *zap.Logger, config *Config, clock Clocker, pstorage 
 		config:   config,
 		clock:    clock,
 		pstorage: pstorage,
-		bstorage: pstorage,
+		bstorage: bstorage,
 		queue:    queue,
 	}
 }
@@ -86,7 +86,7 @@ func (bs *BookService) Update(ctx context.Context, id string, book Book) (Book, 
 }
 
 // GetAll fetches all books from backup storage. In case there is nothing
-// or an error occured, it fallback to primary storage results.
+// or an error occurred, it fallback to primary storage results.
 func (bs *BookService) GetAll(ctx context.Context) ([]Book, error) {
 	bbooks, berr := bs.bstorage.GetAll(ctx)
 	if berr != nil || len(bbooks) == 0 {
