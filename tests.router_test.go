@@ -2,12 +2,14 @@ package main
 
 import (
 	"context"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
 	"github.com/julienschmidt/httprouter"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"go.uber.org/zap"
 )
 
@@ -236,7 +238,7 @@ func TestSetupRoutes(t *testing.T) {
 
 	config := &Config{OpsEndpointsEnable: false, ProfilerEndpointsEnable: false}
 	bs := NewBookService(zap.NewNop(), config, NewMockClocker(), nil, nil)
-	api := NewAPIHandler(zap.NewNop(), config, &Statistics{started: NewMockClocker().Now()}, NewMockClocker(), nil, bs)
+	api := NewAPIHandler(zap.NewNop(), config, &Statistics{started: NewMockClocker().Now()}, NewMockClocker(), NewMockUIDHandler("abc", true), bs)
 	m := &MiddlewareMap{public: (&Middlewares{}).Chain, ops: (&Middlewares{}).Chain}
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
@@ -257,4 +259,24 @@ func TestSetupRoutes(t *testing.T) {
 			}
 		})
 	}
+}
+
+// TestSetupRoutes_NotFound ensures exact status code and json response body when a user requests an inexistant route.
+func TestSetupRoutes_NotFound(t *testing.T) {
+	m := &MiddlewareMap{public: (&Middlewares{}).Chain, ops: (&Middlewares{}).Chain}
+	api := NewAPIHandler(zap.NewNop(), &Config{}, &Statistics{started: NewMockClocker().Now()}, NewMockClocker(), NewMockUIDHandler("abc", true), nil)
+	router := httprouter.New()
+	api.SetupRoutes(router, m)
+	r := httptest.NewRequest(http.MethodGet, "/x/books/", nil)
+	w := httptest.NewRecorder()
+	router.ServeHTTP(w, r)
+
+	res := w.Result()
+	defer res.Body.Close()
+	assert.Equal(t, http.StatusNotFound, res.StatusCode)
+	assert.Equal(t, "application/json; charset=UTF-8", res.Header.Get("Content-Type"))
+	data, err := io.ReadAll(res.Body)
+	require.NoError(t, err)
+	expected := `{"requestid":"r:abc", "message":"route does not exist", "path":"GET /x/books/"}`
+	assert.JSONEq(t, expected, string(data))
 }
