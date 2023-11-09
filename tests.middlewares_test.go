@@ -185,7 +185,6 @@ func TestAddLoggerMiddleware(t *testing.T) {
 		zap.Uint64("request.number", 0),
 		zap.String("request.method", "GET"),
 		zap.String("request.path", "/v1/books"),
-		zap.String("request.ip", "192.0.2.1"),
 		zap.String("request.agent", ""),
 		zap.String("request.referer", ""),
 	}, log.Context)
