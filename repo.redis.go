@@ -93,7 +93,8 @@ func (rs *redisBookStorage) GetAll(ctx context.Context) ([]Book, error) {
 	if err != nil {
 		return nil, err
 	}
-	books := []Book{}
+	lg := len(mapBooks)
+	books := make([]Book, 0, lg)
 	for _, bookJSONString := range mapBooks {
 		var book Book
 		if err = json.Unmarshal([]byte(bookJSONString), &book); err != nil {
