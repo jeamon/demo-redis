@@ -32,7 +32,7 @@ func (api *APIHandler) DurationMiddleware(next httprouter.Handle) httprouter.Han
 		nw := NewCustomResponseWriter(w)
 		next(nw, r, ps)
 		logger.Info(
-			"request",
+			"stats",
 			zap.Int("request.status", nw.statusCode),
 			zap.Duration("request.duration", api.clock.Now().Sub(start)),
 		)
@@ -56,7 +56,7 @@ func (api *APIHandler) AddLoggerMiddleware(next httprouter.Handle) httprouter.Ha
 			zap.Uint64("request.number", requestNum),
 			zap.String("request.method", r.Method),
 			zap.String("request.path", r.URL.Path),
-			zap.String("request.ip", GetRequestSourceIP(r)),
+			// zap.String("request.ip", GetRequestSourceIP(r)),
 			zap.String("request.agent", r.UserAgent()),
 			zap.String("request.referer", r.Referer()),
 		)
