@@ -33,14 +33,15 @@ func (api *APIHandler) DurationMiddleware(next httprouter.Handle) httprouter.Han
 		next(nw, r, ps)
 		logger.Info(
 			"stats",
-			zap.Int("request.status", nw.statusCode),
+			zap.Int("request.status", nw.Status()),
+			zap.Int("bytes.sent", nw.Bytes()),
 			zap.Duration("request.duration", api.clock.Now().Sub(start)),
 		)
 		api.stats.mu.Lock()
-		if num, found := api.stats.status[nw.statusCode]; !found {
-			api.stats.status[nw.statusCode] = 1
+		if num, found := api.stats.status[nw.code]; !found {
+			api.stats.status[nw.code] = 1
 		} else {
-			api.stats.status[nw.statusCode] = num + 1
+			api.stats.status[nw.code] = num + 1
 		}
 		api.stats.mu.Unlock()
 	}
