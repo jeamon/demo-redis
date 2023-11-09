@@ -30,7 +30,7 @@ func SetupLogging(config *Config, logFile *os.File) (*zap.Logger, func() error) 
 		zapConfig.StacktraceKey = "stacktrace"
 		fileEncoder := zapcore.NewJSONEncoder(zapConfig)
 		zapCore := zapcore.NewTee(zapcore.NewCore(fileEncoder, zapcore.AddSync(logFile), config.LogLevel))
-		logger = zap.New(zapCore, zap.AddCaller(), zap.AddStacktrace(zapcore.ErrorLevel))
+		logger = zap.New(zapCore, zap.AddCaller(), zap.AddStacktrace(zapcore.FatalLevel))
 	} else {
 		zapConfig := zap.NewDevelopmentEncoderConfig()
 		zapConfig.TimeKey = "timestamp"
@@ -45,7 +45,7 @@ func SetupLogging(config *Config, logFile *os.File) (*zap.Logger, func() error) 
 		zapCore := zapcore.NewTee(
 			zapcore.NewCore(fileEncoder, zapcore.AddSync(logFile), config.LogLevel),
 			zapcore.NewCore(consoleEncoder, zapcore.AddSync(os.Stdout), config.LogLevel))
-		logger = zap.New(zapCore, zap.AddCaller(), zap.AddStacktrace(zapcore.ErrorLevel))
+		logger = zap.New(zapCore, zap.AddCaller(), zap.AddStacktrace(zapcore.FatalLevel))
 	}
 	logger = logger.With(zap.String("app.commit", config.GitCommit), zap.String("app.tag", config.GitTag), zap.String("app.built", config.BuildTime))
 
