@@ -75,7 +75,7 @@ func NewApp() (AppProvider, error) {
 	redisQueue := NewRedisQueue(redisClient)
 	boltDBConsumer := NewBoltDBConsumer(logger, redisQueue, boltBookStorage)
 
-	bookService := NewBookService(logger, config, NewClock(), redisBookStorage, redisQueue)
+	bookService := NewBookService(logger, config, NewClock(), redisBookStorage, boltBookStorage, redisQueue)
 	apiService := NewAPIHandler(
 		logger,
 		config,
