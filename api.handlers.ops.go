@@ -199,6 +199,21 @@ func (api *APIHandler) Maintenance(w http.ResponseWriter, r *http.Request, ps ht
 	}
 }
 
+// ClearBooksCache deletes all books entries from the primary storage (cache).
+func (api *APIHandler) ClearBooksCache(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	requestID := GetValueFromContext(r.Context(), ContextRequestID)
+	go api.bookService.DeleteAll(r.Context(), requestID)
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	if err := json.NewEncoder(w).Encode(
+		map[string]string{
+			"requestid": requestID,
+			"message":   "books cache clearing started. check logs every 30 secs based on requestid",
+		},
+	); err != nil {
+		api.logger.Error("failed to send clear books cache response", zap.String("request.id", requestID), zap.Error(err))
+	}
+}
+
 // GetProfilerIndexPage displays pprof index page.
 // func (api *APIHandler) GetProfilerIndexPage(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 //	pprof.Index(w, r)

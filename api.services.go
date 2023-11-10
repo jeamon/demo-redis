@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"time"
 
 	"go.uber.org/zap"
 )
@@ -12,6 +13,7 @@ type BookServiceProvider interface {
 	Delete(ctx context.Context, id string) error
 	Update(ctx context.Context, id string, book Book) (Book, error)
 	GetAll(ctx context.Context) ([]Book, error)
+	DeleteAll(ctx context.Context, requestid string)
 }
 
 type BookService struct {
@@ -93,4 +95,33 @@ func (bs *BookService) GetAll(ctx context.Context) ([]Book, error) {
 		return bs.pstorage.GetAll(ctx)
 	}
 	return bbooks, berr
+}
+
+// DeleteAll removes all books from primary storage (cache). This cleanup operation
+// is decoupled from the request context and uses a timeout of 10 mins.
+func (bs *BookService) DeleteAll(_ context.Context, rid string) {
+	opsCtx, cancel := context.WithTimeout(context.Background(), 10*time.Minute)
+	defer cancel()
+	start := bs.clock.Now()
+	errChan := make(chan error, 1)
+	go func() {
+		errChan <- bs.pstorage.DeleteAll(opsCtx)
+	}()
+	ticker := time.NewTicker(30 * time.Second)
+	defer ticker.Stop()
+	for {
+		select {
+		case <-opsCtx.Done():
+			bs.logger.Error("service: timeout clearing books cache", zap.Duration("duration", time.Since(start)), zap.String("request.id", rid), zap.Error(opsCtx.Err()))
+		case <-ticker.C:
+			bs.logger.Info("service: books cache clearing still running ", zap.Duration("duration", time.Since(start)), zap.String("request.id", rid))
+		case err := <-errChan:
+			if err != nil {
+				bs.logger.Error("service: error clearing books cache", zap.Duration("duration", time.Since(start)), zap.String("request.id", rid), zap.Error(err))
+			} else {
+				bs.logger.Info("service: books cache clearing completed", zap.Duration("duration", time.Since(start)), zap.String("request.id", rid))
+			}
+			return
+		}
+	}
 }

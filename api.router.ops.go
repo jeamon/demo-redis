@@ -12,6 +12,7 @@ func (api *APIHandler) SetupOpsRoutes(router *httprouter.Router, m *MiddlewareMa
 	router.GET("/ops/configs", m.ops(api.GetConfigs))
 	router.GET("/ops/stats", m.ops(api.GetStatistics))
 	router.GET("/ops/maintenance", m.ops(api.Maintenance))
+	router.DELETE("/ops/cache/books/clear", m.ops(api.ClearBooksCache))
 	router.GET("/ops/debug/vars", m.ops(GetMemStats))
 	router.GET("/ops/debug/gc", m.ops(api.RunGC))
 	router.GET("/ops/debug/fos", m.ops(api.FreeOSMemory))
