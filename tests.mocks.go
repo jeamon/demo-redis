@@ -8,11 +8,12 @@ import (
 // This file contains mocks definitions needed to perform unit tests.
 
 type MockBookStorage struct {
-	AddFunc    func(ctx context.Context, id string, book Book) error
-	GetOneFunc func(ctx context.Context, id string) (Book, error)
-	DeleteFunc func(ctx context.Context, id string) error
-	UpdateFunc func(ctx context.Context, id string, book Book) (Book, error)
-	GetAllFunc func(ctx context.Context) ([]Book, error)
+	AddFunc       func(ctx context.Context, id string, book Book) error
+	GetOneFunc    func(ctx context.Context, id string) (Book, error)
+	DeleteFunc    func(ctx context.Context, id string) error
+	UpdateFunc    func(ctx context.Context, id string, book Book) (Book, error)
+	GetAllFunc    func(ctx context.Context) ([]Book, error)
+	DeleteAllFunc func(ctx context.Context) error
 }
 
 // Add mocks the behavior of book creation by the repository.
@@ -38,6 +39,11 @@ func (m *MockBookStorage) Update(ctx context.Context, id string, book Book) (Boo
 // GetAll mocks the behavior of retrieving all books by the repository.
 func (m *MockBookStorage) GetAll(ctx context.Context) ([]Book, error) {
 	return m.GetAllFunc(ctx)
+}
+
+// DeleteAll mocks the behavior of deleting all books by the repository.
+func (m *MockBookStorage) DeleteAll(ctx context.Context) error {
+	return m.DeleteAllFunc(ctx)
 }
 
 // MockClocker implements a fake Clocker.
