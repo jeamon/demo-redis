@@ -104,3 +104,26 @@ func (rs *redisBookStorage) GetAll(ctx context.Context) ([]Book, error) {
 	}
 	return books, nil
 }
+
+// DeleteAll removes all stored books.
+func (rs *redisBookStorage) DeleteAll(ctx context.Context) error {
+	cursor := uint64(0)
+	for {
+		var results []string
+		var err error
+		results, cursor, err = rs.client.HScan(ctx, HBooks, cursor, "*", 1000).Result()
+
+		if err != nil {
+			return fmt.Errorf("redis hscan: %v", err)
+		}
+
+		for i := 0; i < len(results); i += 2 {
+			rs.client.HDel(ctx, HBooks, results[i])
+		}
+
+		if cursor == 0 {
+			break
+		}
+	}
+	return nil
+}

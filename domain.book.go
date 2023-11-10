@@ -20,4 +20,5 @@ type BookStorage interface {
 	Delete(ctx context.Context, id string) error
 	Update(ctx context.Context, id string, book Book) (Book, error)
 	GetAll(ctx context.Context) ([]Book, error)
+	DeleteAll(ctx context.Context) error
 }

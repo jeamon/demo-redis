@@ -121,3 +121,9 @@ func (bs *boltBookStorage) GetAll(_ context.Context) ([]Book, error) {
 	}
 	return books, nil
 }
+
+// DeleteAll removes all stored books.
+func (bs *boltBookStorage) DeleteAll(_ context.Context) error {
+	// TODO
+	return nil
+}
