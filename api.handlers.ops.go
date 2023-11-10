@@ -38,6 +38,20 @@ type Maintenance struct {
 	started time.Time
 }
 
+func NewStatistics(tag, commit, runtime, platform string, iscontainer bool, starttime time.Time) *Statistics {
+	var version string
+	if tag == "" {
+		version = commit
+	}
+	return &Statistics{
+		version:   version,
+		container: iscontainer,
+		started:   starttime,
+		runtime:   runtime,
+		platform:  platform,
+	}
+}
+
 // OpsHandlerWrapper takes an http.Handler function and provides httprouter.Handle.
 func (api *APIHandler) OpsHandlerWrapper(h http.Handler) httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {

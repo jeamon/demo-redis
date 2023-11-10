@@ -76,25 +76,8 @@ func NewApp() (AppProvider, error) {
 	boltDBConsumer := NewBoltDBConsumer(logger, redisQueue, boltBookStorage)
 
 	bookService := NewBookService(logger, config, NewClock(), redisBookStorage, boltBookStorage, redisQueue)
-	apiService := NewAPIHandler(
-		logger,
-		config,
-		&Statistics{
-			version:   config.GitTag,
-			container: IsAppRunningInDocker(),
-			started:   time.Now(),
-			runtime:   runtime.Version(),
-			platform:  runtime.GOOS + "/" + runtime.GOARCH,
-		},
-		NewClock(),
-		NewIDsHandler(),
-		bookService,
-	)
-
-	// Use git commit in case the tag is not set.
-	if config.GitTag == "" {
-		apiService.stats.version = config.GitCommit
-	}
+	stats := NewStatistics(config.GitTag, config.GitCommit, runtime.Version(), runtime.GOOS+"/"+runtime.GOARCH, IsAppRunningInDocker(), time.Now())
+	apiService := NewAPIHandler(logger, config, stats, NewClock(), NewIDsHandler(), bookService)
 
 	// Build the map of middlewares stacks.
 	middlewaresPublic, middlewaresOps := apiService.MiddlewaresStacks()
