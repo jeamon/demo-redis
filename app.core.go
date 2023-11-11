@@ -89,16 +89,11 @@ func NewApp() (AppProvider, error) {
 			ops:    middlewaresOps.Chain,
 		},
 	)
-	// Wrap the router with the default http timeout handler.
-	routerWithTimeout := http.TimeoutHandler(
-		router,
-		config.Server.RequestTimeout,
-		"Timeout. Processing taking too long. Please reach out to support.")
 
 	// Build the api server definition.
 	srv := &http.Server{
 		Addr:           fmt.Sprintf("%s:%s", config.Server.Host, config.Server.Port),
-		Handler:        routerWithTimeout,
+		Handler:        router,
 		ReadTimeout:    config.Server.ReadTimeout,
 		WriteTimeout:   config.Server.WriteTimeout,
 		MaxHeaderBytes: 1 << 20, // Max headers size : 1MB
