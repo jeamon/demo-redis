@@ -19,8 +19,8 @@ import (
 func TestMiddlewaresStacks(t *testing.T) {
 	api := NewAPIHandler(zap.NewNop(), nil, &Statistics{started: NewMockClocker().Now()}, NewMockClocker(), nil, nil)
 	pub, ops := api.MiddlewaresStacks()
-	assert.Equal(t, 7, len(*pub))
-	assert.Equal(t, 6, len(*ops))
+	assert.Equal(t, 8, len(*pub))
+	assert.Equal(t, 7, len(*ops))
 }
 
 // TestChain ensures each middleware in the stack is called as well the handler.
