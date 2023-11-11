@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"path/filepath"
+	"time"
 
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
@@ -67,4 +69,16 @@ func (api *APIHandler) GetLoggerFromContext(ctx context.Context) *zap.Logger {
 		return value.(*zap.Logger)
 	}
 	return api.logger
+}
+
+// CreateLogFilePath returns the absolute path of the initial log file.
+func CreateLogFilePath(folder string, isProd bool, t time.Time) string {
+	var envKey string
+	if isProd {
+		envKey = "prod"
+	} else {
+		envKey = "dev"
+	}
+	suffix := fmt.Sprintf("%02d%02d%02d.%02d%02d%02d.%s.log", t.Year(), t.Month(), t.Day(), t.Hour(), t.Minute(), t.Second(), envKey)
+	return filepath.Join(folder, suffix)
 }

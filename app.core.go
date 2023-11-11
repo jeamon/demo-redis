@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
-	"path/filepath"
 	"runtime"
 	"syscall"
 	"time"
@@ -46,7 +45,7 @@ func NewApp(start time.Time) (AppProvider, error) {
 	if err != nil {
 		return nil, fmt.Errorf("logging: failed to create folder: %v", err)
 	}
-	logFile, err := os.OpenFile(createLogFilePath(config.LogFolder, start), os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0o644)
+	logFile, err := os.OpenFile(CreateLogFilePath(config.LogFolder, config.IsProduction, start), os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0o644)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create logging file: %s", err)
 	}
@@ -210,10 +209,4 @@ func (app *App) ConsumeQueues(gCtx context.Context, g *errgroup.Group) func() er
 		}
 		return nil
 	}
-}
-
-// createLogFilePath returns the absolute path of the initial log file.
-func createLogFilePath(folder string, t time.Time) string {
-	suffix := fmt.Sprintf("%02d%02d%02d.%02d%02d%02d.log", t.Year(), t.Month(), t.Day(), t.Hour(), t.Minute(), t.Second())
-	return filepath.Join(folder, suffix)
 }
