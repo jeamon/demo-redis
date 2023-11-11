@@ -160,7 +160,7 @@ func (api *APIHandler) TimeoutMiddleware(next httprouter.Handle) httprouter.Hand
 
 			// Explicitly set X-Timeout-Reached header so we can hack on it to instruct Handler
 			// to not respond to client because timeout response was already reached and sent.
-			w.Header().Set("X-Timeout-Reached", "")
+			w.Header().Set("X-Timeout-Reached", "Y")
 			w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 			w.WriteHeader(http.StatusGatewayTimeout)
 			if err := json.NewEncoder(w).Encode(map[string]interface{}{

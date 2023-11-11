@@ -29,7 +29,7 @@ func (cw *CustomResponseWriter) Header() http.Header {
 
 // WriteHeader implements http.WriteHeader interface.
 func (cw *CustomResponseWriter) WriteHeader(code int) {
-	if cw.Header().Get("X-Timeout-Reached") == "" {
+	if cw.Header().Get("X-Timeout-Reached") != "" {
 		cw.code = http.StatusGatewayTimeout
 		cw.wrote = true
 		return
@@ -45,7 +45,7 @@ func (cw *CustomResponseWriter) WriteHeader(code int) {
 // Write implements http.Write interface. If the header X-Timeout-Reached is present
 // that means the timeout middleware was already triggered so we do not send anything.
 func (cw *CustomResponseWriter) Write(bytes []byte) (int, error) {
-	if cw.Header().Get("X-Timeout-Reached") == "" {
+	if cw.Header().Get("X-Timeout-Reached") != "" {
 		return 0, http.ErrHandlerTimeout
 	}
 
