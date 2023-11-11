@@ -2,6 +2,9 @@ package main
 
 import (
 	"context"
+	"encoding/json"
+	"errors"
+	"fmt"
 	"net/http"
 	"sync/atomic"
 
@@ -134,6 +137,43 @@ func (api *APIHandler) PanicRecoveryMiddleware(next httprouter.Handle) httproute
 	}
 }
 
+func (api *APIHandler) TimeoutMiddleware(next httprouter.Handle) httprouter.Handle {
+	return func(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+		requestID := GetValueFromContext(r.Context(), ContextRequestID)
+		logger := api.GetLoggerFromContext(r.Context())
+		timeout := api.config.Server.RequestTimeout
+		ctx, cancel := context.WithTimeout(r.Context(), api.config.Server.RequestTimeout)
+		defer cancel()
+		r = r.WithContext(ctx)
+		done := make(chan struct{})
+		go func() {
+			next(w, r, ps)
+			close(done)
+		}()
+
+		select {
+		case <-done:
+		case <-ctx.Done():
+			if !errors.Is(ctx.Err(), context.DeadlineExceeded) {
+				return
+			}
+
+			// Explicitly set X-Timeout-Reached header so we can hack on it to instruct Handler
+			// to not respond to client because timeout response was already reached and sent.
+			w.Header().Set("X-Timeout-Reached", "")
+			w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+			w.WriteHeader(http.StatusGatewayTimeout)
+			if err := json.NewEncoder(w).Encode(map[string]interface{}{
+				"requestid": requestID,
+				"message":   "request handling timed out",
+				"timeout":   fmt.Sprintf("%.0f secs", timeout.Seconds()),
+			}); err != nil {
+				logger.Error("failed to send timeout response", zap.String("request.id", requestID), zap.Error(err))
+			}
+		}
+	}
+}
+
 // Chain wraps a given httprouter.Handle with a list of middlewares.
 // It does by starting from the last middleware from the list.
 func (m *Middlewares) Chain(h httprouter.Handle) httprouter.Handle {
@@ -159,6 +199,7 @@ func (api *APIHandler) MiddlewaresStacks() (*Middlewares, *Middlewares) {
 		api.RequestsCounterMiddleware,
 		api.AddLoggerMiddleware,
 		CORSMiddleware,
+		api.TimeoutMiddleware,
 		api.DurationMiddleware,
 	}
 
@@ -168,6 +209,7 @@ func (api *APIHandler) MiddlewaresStacks() (*Middlewares, *Middlewares) {
 		api.RequestsCounterMiddleware,
 		api.AddLoggerMiddleware,
 		CORSMiddleware,
+		api.TimeoutMiddleware,
 		api.DurationMiddleware,
 	}
 	return &middlewaresPublic, &middlewaresOps
