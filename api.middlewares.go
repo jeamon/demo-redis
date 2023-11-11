@@ -127,7 +127,7 @@ func (api *APIHandler) PanicRecoveryMiddleware(next httprouter.Handle) httproute
 				requestID := GetValueFromContext(r.Context(), ContextRequestID)
 				api.logger.Error("panic occurred", zap.String("request.id", requestID), zap.Any("error", err))
 				errResp := NewAPIError(requestID, http.StatusInternalServerError, "failed to process the request.", struct{}{})
-				if err := WriteErrorResponse(w, errResp); err != nil {
+				if err := WriteErrorResponse(r.Context(), w, errResp); err != nil {
 					api.logger.Error("failed to send error response", zap.String("request.id", requestID), zap.Error(err))
 				}
 			}
@@ -137,6 +137,9 @@ func (api *APIHandler) PanicRecoveryMiddleware(next httprouter.Handle) httproute
 	}
 }
 
+// TimeoutMiddleware returns a Handler which sets X-Timeout-Reached header to instruct the final handler to not
+// respond to client because timeout response was already sent. Similarily it sets X-Request-Cancelled into the
+// header to notify the final handler to not perform any action towards the client.
 func (api *APIHandler) TimeoutMiddleware(next httprouter.Handle) httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		requestID := GetValueFromContext(r.Context(), ContextRequestID)
@@ -154,22 +157,22 @@ func (api *APIHandler) TimeoutMiddleware(next httprouter.Handle) httprouter.Hand
 		select {
 		case <-done:
 		case <-ctx.Done():
-			if !errors.Is(ctx.Err(), context.DeadlineExceeded) {
-				return
+			if cerr := ctx.Err(); errors.Is(cerr, context.Canceled) {
+				w.Header().Set("X-Request-Cancelled", "Y")
+				w.WriteHeader(499)
+			} else if errors.Is(cerr, context.DeadlineExceeded) {
+				w.Header().Set("X-Timeout-Reached", "Y")
+				w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+				w.WriteHeader(http.StatusGatewayTimeout)
+				if err := json.NewEncoder(w).Encode(map[string]interface{}{
+					"requestid": requestID,
+					"message":   "request handling timed out",
+					"timeout":   fmt.Sprintf("%.0f secs", timeout.Seconds()),
+				}); err != nil {
+					logger.Error("failed to send timeout response", zap.String("request.id", requestID), zap.Error(err))
+				}
 			}
 
-			// Explicitly set X-Timeout-Reached header so we can hack on it to instruct Handler
-			// to not respond to client because timeout response was already reached and sent.
-			w.Header().Set("X-Timeout-Reached", "Y")
-			w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-			w.WriteHeader(http.StatusGatewayTimeout)
-			if err := json.NewEncoder(w).Encode(map[string]interface{}{
-				"requestid": requestID,
-				"message":   "request handling timed out",
-				"timeout":   fmt.Sprintf("%.0f secs", timeout.Seconds()),
-			}); err != nil {
-				logger.Error("failed to send timeout response", zap.String("request.id", requestID), zap.Error(err))
-			}
 		}
 	}
 }
