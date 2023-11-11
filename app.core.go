@@ -74,9 +74,9 @@ func NewApp(start time.Time) (AppProvider, error) {
 	redisQueue := NewRedisQueue(redisClient)
 	boltDBConsumer := NewBoltDBConsumer(logger, redisQueue, boltBookStorage)
 
-	bookService := NewBookService(logger, config, NewClock(), redisBookStorage, boltBookStorage, redisQueue)
+	bookService := NewBookService(logger, config, NewClock(config.IsProduction), redisBookStorage, boltBookStorage, redisQueue)
 	stats := NewStatistics(config.GitTag, config.GitCommit, runtime.Version(), runtime.GOOS+"/"+runtime.GOARCH, IsAppRunningInDocker(), start)
-	apiService := NewAPIHandler(logger, config, stats, NewClock(), NewIDsHandler(), bookService)
+	apiService := NewAPIHandler(logger, config, stats, NewClock(config.IsProduction), NewIDsHandler(), bookService)
 
 	// Build the map of middlewares stacks.
 	middlewaresPublic, middlewaresOps := apiService.MiddlewaresStacks()

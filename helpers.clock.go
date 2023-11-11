@@ -12,14 +12,20 @@ type Clocker interface {
 }
 
 // Clock implements the Clocker interface.
-type Clock struct{}
+type Clock struct {
+	tz *time.Location
+}
 
-// NewClock returns a ready to use Clock.
-func NewClock() *Clock {
-	return &Clock{}
+// NewClock returns a ready to use Clock with timezone sets
+// to UTC in production environment and Local in dev env.
+func NewClock(isProd bool) *Clock {
+	if isProd {
+		return &Clock{time.UTC}
+	}
+	return &Clock{time.Local}
 }
 
 // Now provides current clock time.
 func (ck *Clock) Now() time.Time {
-	return time.Now()
+	return time.Now().In(ck.tz)
 }
