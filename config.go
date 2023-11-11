@@ -19,7 +19,7 @@ type Config struct {
 	BuildTime               string        `yaml:"build_time" envconfig:"DRAP_BUILD_TIME"`
 	IsProduction            bool          `yaml:"is_production" envconfig:"DRAP_IS_PRODUCTION"`
 	LogLevel                zapcore.Level `yaml:"log_level" envconfig:"DRAP_LOG_LEVEL"`
-	LogFile                 string        `yaml:"log_file" envconfig:"DRAP_LOG_FILE"`
+	LogFolder               string        `yaml:"log_folder" envconfig:"DRAP_LOG_FOLDER"`
 	ProfilerEndpointsEnable bool          `yaml:"profiler_endpoints_enable" envconfig:"DRAP_PROFILER_ENDPOINTS_ENABLE"`
 	OpsEndpointsEnable      bool          `yaml:"ops_endpoints_enable" envconfig:"DRAP_OPS_ENDPOINTS_ENABLE"`
 	Server                  ServerConfig  `yaml:"server"`

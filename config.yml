@@ -8,7 +8,7 @@
 # logs is printed on console and file
 is_production: false
 log_level: "info"
-log_file: "logs/logs.log"
+log_folder: "logs/"
 
 # Could be manually set or envs variables
 # or auto detected with build flags.
@@ -29,8 +29,10 @@ server:
   host: "0.0.0.0"
   port: "8080"
   read_timeout: 5s
+  # write_timeout > request_timeout to allow
+  # timeout message to be sent.
   write_timeout: 17s
-  request_timeout: 15s
+  request_timeout: 15s 
   shutdown_timeout: 90s
   certs_file: "./server.crt"
   key_file: "./server.key"
