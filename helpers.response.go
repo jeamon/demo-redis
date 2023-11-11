@@ -1,7 +1,9 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
+	"errors"
 	"net/http"
 )
 
@@ -29,8 +31,8 @@ func (cw *CustomResponseWriter) Header() http.Header {
 
 // WriteHeader implements http.WriteHeader interface.
 func (cw *CustomResponseWriter) WriteHeader(code int) {
-	if cw.Header().Get("X-Timeout-Reached") != "" {
-		cw.code = http.StatusGatewayTimeout
+	if cw.Header().Get("X-Timeout-Reached") != "" || cw.Header().Get("X-Request-Cancelled") != "" {
+		cw.code = code
 		cw.wrote = true
 		return
 	}
@@ -46,7 +48,11 @@ func (cw *CustomResponseWriter) WriteHeader(code int) {
 // that means the timeout middleware was already triggered so we do not send anything.
 func (cw *CustomResponseWriter) Write(bytes []byte) (int, error) {
 	if cw.Header().Get("X-Timeout-Reached") != "" {
-		return 0, http.ErrHandlerTimeout
+		return 0, context.DeadlineExceeded
+	}
+
+	if cw.Header().Get("X-Request-Cancelled") != "" {
+		return 0, context.Canceled
 	}
 
 	if !cw.wrote {
@@ -112,13 +118,36 @@ func GenericResponse(requestid string, status int, message string, total *int, d
 	}
 }
 
-func WriteErrorResponse(w http.ResponseWriter, errResp *APIError) error {
+// WriteErrorResponse is used to send error response to client. In case the client closes the request
+// it logs with the Nginx non standard status code 499 Client Closed Request meaning the client has closed
+// the request before the server could send a response. This means the timeout middleware already kicked-in
+// and did send the json message with 400 BadRequest as status code (since 499 is not a standard).
+func WriteErrorResponse(ctx context.Context, w http.ResponseWriter, errResp *APIError) error {
+	if err := ctx.Err(); err != nil {
+		if errors.Is(err, context.DeadlineExceeded) {
+			w.WriteHeader(http.StatusGatewayTimeout)
+		} else {
+			w.WriteHeader(499)
+		}
+		return ctx.Err()
+	}
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(errResp.Status)
 	return json.NewEncoder(w).Encode(errResp)
 }
 
-func WriteResponse(w http.ResponseWriter, resp *APIResponse) error {
+// WriteResponse is used to send success api response to client. In case the client closes the request
+// it sends the Nginx non standard status code 499 Client Closed Request meaning the client has closed
+// the request before the server could send a response.
+func WriteResponse(ctx context.Context, w http.ResponseWriter, resp *APIResponse) error {
+	if err := ctx.Err(); err != nil {
+		if errors.Is(err, context.DeadlineExceeded) {
+			w.WriteHeader(http.StatusGatewayTimeout)
+		} else {
+			w.WriteHeader(499)
+		}
+		return ctx.Err()
+	}
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(resp.Status)
 	return json.NewEncoder(w).Encode(resp)
