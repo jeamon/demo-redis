@@ -34,7 +34,7 @@ type App struct {
 }
 
 // NewApp provides an instance of App.
-func NewApp() (AppProvider, error) {
+func NewApp(start time.Time) (AppProvider, error) {
 	var app *App
 	config, err := LoadAndInitConfigs(GitCommit, GitTag, BuildTime)
 	if err != nil {
@@ -42,11 +42,11 @@ func NewApp() (AppProvider, error) {
 	}
 
 	// ensure the logs folder exists and Setup the logging module.
-	err = os.MkdirAll(filepath.Dir(config.LogFile), 0o700)
+	err = os.MkdirAll(config.LogFolder, 0o700)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create logging folder: %s", err)
+		return nil, fmt.Errorf("logging: failed to create folder: %v", err)
 	}
-	logFile, err := os.OpenFile(config.LogFile, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0o644)
+	logFile, err := os.OpenFile(createLogFilePath(config.LogFolder, start), os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0o644)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create logging file: %s", err)
 	}
@@ -76,7 +76,7 @@ func NewApp() (AppProvider, error) {
 	boltDBConsumer := NewBoltDBConsumer(logger, redisQueue, boltBookStorage)
 
 	bookService := NewBookService(logger, config, NewClock(), redisBookStorage, boltBookStorage, redisQueue)
-	stats := NewStatistics(config.GitTag, config.GitCommit, runtime.Version(), runtime.GOOS+"/"+runtime.GOARCH, IsAppRunningInDocker(), time.Now())
+	stats := NewStatistics(config.GitTag, config.GitCommit, runtime.Version(), runtime.GOOS+"/"+runtime.GOARCH, IsAppRunningInDocker(), start)
 	apiService := NewAPIHandler(logger, config, stats, NewClock(), NewIDsHandler(), bookService)
 
 	// Build the map of middlewares stacks.
@@ -210,4 +210,10 @@ func (app *App) ConsumeQueues(gCtx context.Context, g *errgroup.Group) func() er
 		}
 		return nil
 	}
+}
+
+// createLogFilePath returns the absolute path of the initial log file.
+func createLogFilePath(folder string, t time.Time) string {
+	suffix := fmt.Sprintf("%02d%02d%02d.%02d%02d%02d.log", t.Year(), t.Month(), t.Day(), t.Hour(), t.Minute(), t.Second())
+	return filepath.Join(folder, suffix)
 }
