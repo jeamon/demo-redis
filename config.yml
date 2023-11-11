@@ -6,7 +6,7 @@
 
 # False for developement mode and
 # logs is printed on console and file
-is_production: false
+is_production: true
 log_level: "info"
 log_folder: "logs/"
 
