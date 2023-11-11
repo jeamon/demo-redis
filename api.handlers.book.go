@@ -36,7 +36,7 @@ func (api *APIHandler) CreateBook(w http.ResponseWriter, r *http.Request, _ http
 	if err != nil {
 		api.logger.Error("failed to create book", zap.String("request.id", requestID), zap.Error(err))
 		errResp := NewAPIError(requestID, http.StatusBadRequest, "failed to create the book", book)
-		if err = WriteErrorResponse(w, errResp); err != nil {
+		if err = WriteErrorResponse(r.Context(), w, errResp); err != nil {
 			api.logger.Error("failed to send error response", zap.String("request.id", requestID), zap.Error(err))
 		}
 		return
@@ -46,7 +46,7 @@ func (api *APIHandler) CreateBook(w http.ResponseWriter, r *http.Request, _ http
 	if err != nil {
 		api.logger.Error("failed to create book", zap.String("request.id", requestID), zap.Error(err))
 		errResp := NewAPIError(requestID, http.StatusBadRequest, "failed to create the book", err.Error())
-		if err = WriteErrorResponse(w, errResp); err != nil {
+		if err = WriteErrorResponse(r.Context(), w, errResp); err != nil {
 			api.logger.Error("failed to send error response", zap.String("request.id", requestID), zap.Error(err))
 		}
 		return
@@ -60,13 +60,13 @@ func (api *APIHandler) CreateBook(w http.ResponseWriter, r *http.Request, _ http
 	if err != nil {
 		api.logger.Error("failed to create book", zap.String("request.id", requestID), zap.Error(err))
 		errResp := NewAPIError(requestID, http.StatusInternalServerError, "failed to create the book", book)
-		if err = WriteErrorResponse(w, errResp); err != nil {
+		if err = WriteErrorResponse(r.Context(), w, errResp); err != nil {
 			api.logger.Error("failed to send error response", zap.String("request.id", requestID), zap.Error(err))
 		}
 		return
 	}
 	resp := GenericResponse(requestID, http.StatusCreated, "Book created successfully.", nil, book)
-	if err = WriteResponse(w, resp); err != nil {
+	if err = WriteResponse(r.Context(), w, resp); err != nil {
 		api.logger.Error("failed to send response", zap.String("request.id", requestID), zap.Error(err))
 	}
 }
@@ -77,7 +77,7 @@ func (api *APIHandler) GetAllBooks(w http.ResponseWriter, r *http.Request, _ htt
 	if err != nil {
 		api.logger.Error("failed to get all books", zap.String("request.id", requestID), zap.Error(err))
 		errResp := NewAPIError(requestID, http.StatusInternalServerError, "failed to get all books", books)
-		if err = WriteErrorResponse(w, errResp); err != nil {
+		if err = WriteErrorResponse(r.Context(), w, errResp); err != nil {
 			api.logger.Error("failed to send error response", zap.String("request.id", requestID), zap.Error(err))
 		}
 		return
@@ -85,7 +85,7 @@ func (api *APIHandler) GetAllBooks(w http.ResponseWriter, r *http.Request, _ htt
 	api.logger.Info("success to get all books", zap.String("request.id", requestID))
 	total := len(books)
 	resp := GenericResponse(requestID, http.StatusOK, "All books fetched successfully.", &total, books)
-	if err = WriteResponse(w, resp); err != nil {
+	if err = WriteResponse(r.Context(), w, resp); err != nil {
 		api.logger.Error("failed to send response", zap.Error(err))
 	}
 }
@@ -96,7 +96,7 @@ func (api *APIHandler) GetOneBook(w http.ResponseWriter, r *http.Request, ps htt
 	if ok := api.idsHandler.IsValid(id, BookIDPrefix); !ok {
 		api.logger.Error("book id provided is not valid", zap.String("book.id", id), zap.String("request.id", requestID))
 		errResp := NewAPIError(requestID, http.StatusBadRequest, "book id provided is not valid", Book{})
-		if err := WriteErrorResponse(w, errResp); err != nil {
+		if err := WriteErrorResponse(r.Context(), w, errResp); err != nil {
 			api.logger.Error("failed to send error response", zap.String("request.id", requestID), zap.Error(err))
 		}
 		return
@@ -105,7 +105,7 @@ func (api *APIHandler) GetOneBook(w http.ResponseWriter, r *http.Request, ps htt
 	if err == ErrBookNotFound {
 		api.logger.Error("book does not exist", zap.String("book.id", id), zap.String("request.id", requestID))
 		errResp := NewAPIError(requestID, http.StatusNotFound, "book does not exist", book)
-		if err = WriteErrorResponse(w, errResp); err != nil {
+		if err = WriteErrorResponse(r.Context(), w, errResp); err != nil {
 			api.logger.Error("failed to send error response", zap.String("request.id", requestID), zap.Error(err))
 		}
 		return
@@ -113,14 +113,14 @@ func (api *APIHandler) GetOneBook(w http.ResponseWriter, r *http.Request, ps htt
 	if err != nil {
 		api.logger.Error("failed to get book", zap.String("book.id", id), zap.String("request.id", requestID), zap.Error(err))
 		errResp := NewAPIError(requestID, http.StatusInternalServerError, "failed to create the book", book)
-		if err = WriteErrorResponse(w, errResp); err != nil {
+		if err = WriteErrorResponse(r.Context(), w, errResp); err != nil {
 			api.logger.Error("failed to send error response", zap.String("request.id", requestID), zap.Error(err))
 		}
 		return
 	}
 	api.logger.Info("success to get book", zap.String("book.id", id), zap.String("request.id", requestID))
 	resp := GenericResponse(requestID, http.StatusOK, "Book fetched successfully.", nil, book)
-	if err = WriteResponse(w, resp); err != nil {
+	if err = WriteResponse(r.Context(), w, resp); err != nil {
 		api.logger.Error("failed to send response", zap.String("request.id", requestID), zap.Error(err))
 	}
 }
@@ -131,7 +131,7 @@ func (api *APIHandler) DeleteOneBook(w http.ResponseWriter, r *http.Request, ps 
 	if ok := api.idsHandler.IsValid(id, BookIDPrefix); !ok {
 		api.logger.Error("book id provided is not valid", zap.String("book.id", id), zap.String("request.id", requestID))
 		errResp := NewAPIError(requestID, http.StatusBadRequest, "book id provided is not valid", Book{})
-		if err := WriteErrorResponse(w, errResp); err != nil {
+		if err := WriteErrorResponse(r.Context(), w, errResp); err != nil {
 			api.logger.Error("failed to send error response", zap.String("request.id", requestID), zap.Error(err))
 		}
 		return
@@ -140,7 +140,7 @@ func (api *APIHandler) DeleteOneBook(w http.ResponseWriter, r *http.Request, ps 
 	if err == ErrBookNotFound {
 		api.logger.Error("book does not exist", zap.String("book.id", id), zap.String("request.id", requestID))
 		errResp := NewAPIError(requestID, http.StatusNotFound, "book does not exist", book)
-		if err = WriteErrorResponse(w, errResp); err != nil {
+		if err = WriteErrorResponse(r.Context(), w, errResp); err != nil {
 			api.logger.Error("failed to send error response", zap.String("request.id", requestID), zap.Error(err))
 		}
 		return
@@ -148,7 +148,7 @@ func (api *APIHandler) DeleteOneBook(w http.ResponseWriter, r *http.Request, ps 
 	if err != nil {
 		api.logger.Error("failed to check if the book exist", zap.String("book.id", id), zap.String("request.id", requestID), zap.Error(err))
 		errResp := NewAPIError(requestID, http.StatusInternalServerError, "failed to check if the book exist", book)
-		if err = WriteErrorResponse(w, errResp); err != nil {
+		if err = WriteErrorResponse(r.Context(), w, errResp); err != nil {
 			api.logger.Error("failed to send error response", zap.String("request.id", requestID), zap.Error(err))
 		}
 		return
@@ -158,7 +158,7 @@ func (api *APIHandler) DeleteOneBook(w http.ResponseWriter, r *http.Request, ps 
 	if err == ErrBookNotFound {
 		api.logger.Error("book does not exist", zap.String("book.id", id), zap.String("request.id", requestID))
 		errResp := NewAPIError(requestID, http.StatusNotFound, "book does not exist", book)
-		if err = WriteErrorResponse(w, errResp); err != nil {
+		if err = WriteErrorResponse(r.Context(), w, errResp); err != nil {
 			api.logger.Error("failed to send error response", zap.String("request.id", requestID), zap.Error(err))
 		}
 		return
@@ -166,14 +166,14 @@ func (api *APIHandler) DeleteOneBook(w http.ResponseWriter, r *http.Request, ps 
 	if err != nil {
 		api.logger.Error("failed to delete book", zap.String("book.id", id), zap.String("request.id", requestID), zap.Error(err))
 		errResp := NewAPIError(requestID, http.StatusInternalServerError, "failed to delete the book", book)
-		if err = WriteErrorResponse(w, errResp); err != nil {
+		if err = WriteErrorResponse(r.Context(), w, errResp); err != nil {
 			api.logger.Error("failed to send error response", zap.String("request.id", requestID), zap.Error(err))
 		}
 		return
 	}
 	api.logger.Info("success to delete book", zap.String("book.id", id), zap.String("request.id", requestID))
 	resp := GenericResponse(requestID, http.StatusOK, "Book deleted successfully.", nil, book)
-	if err = WriteResponse(w, resp); err != nil {
+	if err = WriteResponse(r.Context(), w, resp); err != nil {
 		api.logger.Error("failed to send response", zap.String("request.id", requestID), zap.Error(err))
 	}
 }
@@ -185,7 +185,7 @@ func (api *APIHandler) UpdateBook(w http.ResponseWriter, r *http.Request, _ http
 	if err != nil {
 		api.logger.Error("failed to update book", zap.String("request.id", requestID), zap.Error(err))
 		errResp := NewAPIError(requestID, http.StatusBadRequest, "failed to update the book", book)
-		if err = WriteErrorResponse(w, errResp); err != nil {
+		if err = WriteErrorResponse(r.Context(), w, errResp); err != nil {
 			api.logger.Error("failed to send error response", zap.String("request.id", requestID), zap.Error(err))
 		}
 		return
@@ -195,7 +195,7 @@ func (api *APIHandler) UpdateBook(w http.ResponseWriter, r *http.Request, _ http
 	if err != nil {
 		api.logger.Error("failed to update book", zap.String("request.id", requestID), zap.Error(err))
 		errResp := NewAPIError(requestID, http.StatusBadRequest, "failed to update the book", err.Error())
-		if err = WriteErrorResponse(w, errResp); err != nil {
+		if err = WriteErrorResponse(r.Context(), w, errResp); err != nil {
 			api.logger.Error("failed to send error response", zap.String("request.id", requestID), zap.Error(err))
 		}
 		return
@@ -205,14 +205,14 @@ func (api *APIHandler) UpdateBook(w http.ResponseWriter, r *http.Request, _ http
 	if err != nil {
 		api.logger.Error("failed to update book", zap.String("request.id", requestID), zap.Error(err))
 		errResp := NewAPIError(requestID, http.StatusInternalServerError, "failed to update the book", book)
-		if err = WriteErrorResponse(w, errResp); err != nil {
+		if err = WriteErrorResponse(r.Context(), w, errResp); err != nil {
 			api.logger.Error("failed to send error response", zap.String("request.id", requestID), zap.Error(err))
 		}
 		return
 	}
 	api.logger.Info("success to update book", zap.String("book.id", book.ID), zap.String("request.id", requestID))
 	resp := GenericResponse(requestID, http.StatusOK, "Book updated successfully.", nil, book)
-	if err = WriteResponse(w, resp); err != nil {
+	if err = WriteResponse(r.Context(), w, resp); err != nil {
 		api.logger.Error("failed to send response", zap.String("request.id", requestID), zap.Error(err))
 	}
 }
