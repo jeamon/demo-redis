@@ -26,9 +26,9 @@ type MiddlewareMap struct {
 	ops    MiddlewareFunc
 }
 
-// DurationMiddleware is a middleware that logs the duration it takes to handle each request,
+// StatsMiddleware is a middleware that logs the duration it takes to handle each request,
 // then update the number of http status codes returned for internal ops statistics purposes.
-func (api *APIHandler) DurationMiddleware(next httprouter.Handle) httprouter.Handle {
+func (api *APIHandler) StatsMiddleware(next httprouter.Handle) httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		logger := api.GetLoggerFromContext(r.Context())
 		start := api.clock.Now()
@@ -202,7 +202,7 @@ func (api *APIHandler) MiddlewaresStacks() (*Middlewares, *Middlewares) {
 		api.AddLoggerMiddleware,
 		CORSMiddleware,
 		api.TimeoutMiddleware,
-		api.DurationMiddleware,
+		api.StatsMiddleware,
 	}
 
 	middlewaresOps := Middlewares{
@@ -212,7 +212,7 @@ func (api *APIHandler) MiddlewaresStacks() (*Middlewares, *Middlewares) {
 		api.AddLoggerMiddleware,
 		CORSMiddleware,
 		api.TimeoutMiddleware,
-		api.DurationMiddleware,
+		api.StatsMiddleware,
 	}
 	return &middlewaresPublic, &middlewaresOps
 }
