@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net/http"
 )
 
@@ -31,7 +32,7 @@ func (cw *CustomResponseWriter) Header() http.Header {
 
 // WriteHeader implements http.WriteHeader interface.
 func (cw *CustomResponseWriter) WriteHeader(code int) {
-	if cw.Header().Get("X-Timeout-Reached") != "" || cw.Header().Get("X-Request-Cancelled") != "" {
+	if cw.Header().Get("X-DRAP-ABORTED") != "" {
 		cw.code = code
 		cw.wrote = true
 		return
@@ -44,15 +45,12 @@ func (cw *CustomResponseWriter) WriteHeader(code int) {
 	}
 }
 
-// Write implements http.Write interface. If the header X-Timeout-Reached is present
-// that means the timeout middleware was already triggered so we do not send anything.
+// Write implements http.Write interface. If the header X-DRAP-ABORTED was set
+// that means the timeout middleware was already triggered so the final handler
+// should not send any response to client.
 func (cw *CustomResponseWriter) Write(bytes []byte) (int, error) {
-	if cw.Header().Get("X-Timeout-Reached") != "" {
-		return 0, context.DeadlineExceeded
-	}
-
-	if cw.Header().Get("X-Request-Cancelled") != "" {
-		return 0, context.Canceled
+	if cw.Header().Get("X-DRAP-ABORTED") != "" {
+		return 0, fmt.Errorf("handler: request timed out or cancelled")
 	}
 
 	if !cw.wrote {
@@ -118,10 +116,11 @@ func GenericResponse(requestid string, status int, message string, total *int, d
 	}
 }
 
-// WriteErrorResponse is used to send error response to client. In case the client closes the request
-// it logs with the Nginx non standard status code 499 Client Closed Request meaning the client has closed
-// the request before the server could send a response. This means the timeout middleware already kicked-in
-// and did send the json message with 400 BadRequest as status code (since 499 is not a standard).
+// WriteErrorResponse is used to send error response to client. In case the client closes the request,
+// it logs the stats with the Nginx non standard status code 499 (Client Closed Request). This means
+// the timeout middleware already kicked-in and did send the response. In case of request processing
+// timeout we set the status code to 504 which will be used to log the stats. Here also, the middleware
+// already kicked-in and sent a json message to client.
 func WriteErrorResponse(ctx context.Context, w http.ResponseWriter, errResp *APIError) error {
 	if err := ctx.Err(); err != nil {
 		if errors.Is(err, context.DeadlineExceeded) {
@@ -136,9 +135,8 @@ func WriteErrorResponse(ctx context.Context, w http.ResponseWriter, errResp *API
 	return json.NewEncoder(w).Encode(errResp)
 }
 
-// WriteResponse is used to send success api response to client. In case the client closes the request
-// it sends the Nginx non standard status code 499 Client Closed Request meaning the client has closed
-// the request before the server could send a response.
+// WriteResponse is used to send success api response to client. It sets the status code to 499
+// in case client cancelled the request, and to 504 if the request processing timed out.
 func WriteResponse(ctx context.Context, w http.ResponseWriter, resp *APIResponse) error {
 	if err := ctx.Err(); err != nil {
 		if errors.Is(err, context.DeadlineExceeded) {

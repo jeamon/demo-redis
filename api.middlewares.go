@@ -138,7 +138,7 @@ func (api *APIHandler) PanicRecoveryMiddleware(next httprouter.Handle) httproute
 }
 
 // TimeoutMiddleware returns a Handler which sets X-Timeout-Reached header to instruct the final handler to not
-// respond to client because timeout response was already sent. Similarily it sets X-Request-Cancelled into the
+// respond to client because timeout response was already sent. Similarly it sets X-Request-Cancelled into the
 // header to notify the final handler to not perform any action towards the client.
 func (api *APIHandler) TimeoutMiddleware(next httprouter.Handle) httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
@@ -158,10 +158,10 @@ func (api *APIHandler) TimeoutMiddleware(next httprouter.Handle) httprouter.Hand
 		case <-done:
 		case <-ctx.Done():
 			if cerr := ctx.Err(); errors.Is(cerr, context.Canceled) {
-				w.Header().Set("X-Request-Cancelled", "Y")
+				w.Header().Set("X-DRAP-ABORTED", "C")
 				w.WriteHeader(499)
 			} else if errors.Is(cerr, context.DeadlineExceeded) {
-				w.Header().Set("X-Timeout-Reached", "Y")
+				w.Header().Set("X-DRAP-ABORTED", "T")
 				w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 				w.WriteHeader(http.StatusGatewayTimeout)
 				if err := json.NewEncoder(w).Encode(map[string]interface{}{
@@ -172,7 +172,6 @@ func (api *APIHandler) TimeoutMiddleware(next httprouter.Handle) httprouter.Hand
 					logger.Error("failed to send timeout response", zap.String("request.id", requestID), zap.Error(err))
 				}
 			}
-
 		}
 	}
 }
