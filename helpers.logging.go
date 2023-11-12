@@ -15,39 +15,43 @@ const (
 	ContextRequestLogger ContextKey = "request.logger"
 )
 
-// SetupLogging is a helper function that initialize the logging module.
+// SetupLogging is a helper function that initializes the logging module.
 // In production all logs are saved to the defined file. In development
 // the same logs are printed to standard output as well. It only adds
-// stacktrace to debug level logs. All logs come with commit & tag value.
-func SetupLogging(config *Config, logFile *os.File) (*zap.Logger, func() error) {
+// stacktrace to fatal level logs. All logs come with commit & tag value.
+// The custom clock provides timestamp in UTC for production environment
+// and timestamp in Local timezone in development setup.
+func SetupLogging(config *Config, logFile *os.File, clock TickerClocker) (*zap.Logger, func() error) {
 	var logger *zap.Logger
 	if config.IsProduction {
 		zapConfig := zap.NewProductionEncoderConfig()
-		zapConfig.TimeKey = "timestamp"
+		zapConfig.TimeKey = "ts"
 		zapConfig.EncodeTime = zapcore.ISO8601TimeEncoder
-		zapConfig.LevelKey = "level"
+		zapConfig.LevelKey = "lvl"
 		zapConfig.NameKey = "name"
 		zapConfig.MessageKey = "msg"
 		zapConfig.CallerKey = "caller"
-		zapConfig.StacktraceKey = "stacktrace"
+		zapConfig.StacktraceKey = "skt"
 		fileEncoder := zapcore.NewJSONEncoder(zapConfig)
 		zapCore := zapcore.NewTee(zapcore.NewCore(fileEncoder, zapcore.AddSync(logFile), config.LogLevel))
 		logger = zap.New(zapCore, zap.AddCaller(), zap.AddStacktrace(zapcore.FatalLevel))
+		logger = logger.WithOptions(zap.WithClock(clock))
 	} else {
 		zapConfig := zap.NewDevelopmentEncoderConfig()
-		zapConfig.TimeKey = "timestamp"
+		zapConfig.TimeKey = "ts"
 		zapConfig.EncodeTime = zapcore.ISO8601TimeEncoder
-		zapConfig.LevelKey = "level"
+		zapConfig.LevelKey = "lvl"
 		zapConfig.NameKey = "name"
 		zapConfig.MessageKey = "msg"
 		zapConfig.CallerKey = "caller"
-		zapConfig.StacktraceKey = "stacktrace"
+		zapConfig.StacktraceKey = "skt"
 		fileEncoder := zapcore.NewJSONEncoder(zapConfig)
 		consoleEncoder := zapcore.NewConsoleEncoder(zapConfig)
 		zapCore := zapcore.NewTee(
 			zapcore.NewCore(fileEncoder, zapcore.AddSync(logFile), config.LogLevel),
 			zapcore.NewCore(consoleEncoder, zapcore.AddSync(os.Stdout), config.LogLevel))
 		logger = zap.New(zapCore, zap.AddCaller(), zap.AddStacktrace(zapcore.FatalLevel))
+		logger = logger.WithOptions(zap.WithClock(clock))
 	}
 	logger = logger.With(zap.String("app.commit", config.GitCommit), zap.String("app.tag", config.GitTag), zap.String("app.built", config.BuildTime))
 
