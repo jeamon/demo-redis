@@ -2,11 +2,10 @@ package main
 
 import (
 	"log"
-	"time"
 )
 
 func main() {
-	app, err := NewApp(time.Now())
+	app, err := NewApp()
 	if err != nil {
 		log.Fatalf("app failed: %v", err)
 	}

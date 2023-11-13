@@ -9,7 +9,6 @@ import (
 	"os/signal"
 	"runtime"
 	"syscall"
-	"time"
 
 	"github.com/julienschmidt/httprouter"
 	"github.com/redis/go-redis/v9"
@@ -33,7 +32,7 @@ type App struct {
 }
 
 // NewApp provides an instance of App.
-func NewApp(start time.Time) (AppProvider, error) {
+func NewApp() (AppProvider, error) {
 	var app *App
 	config, err := LoadAndInitConfigs(GitCommit, GitTag, BuildTime)
 	if err != nil {
@@ -45,7 +44,8 @@ func NewApp(start time.Time) (AppProvider, error) {
 	if err != nil {
 		return nil, fmt.Errorf("logging: failed to create folder: %v", err)
 	}
-	logFile, err := os.OpenFile(CreateLogFilePath(config.LogFolder, config.IsProduction, start), os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0o644)
+	clock := NewClock(config.IsProduction)
+	logFile, err := os.OpenFile(CreateLogFilePath(config.LogFolder, config.IsProduction, clock.Now()), os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0o644)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create logging file: %s", err)
 	}
@@ -74,9 +74,9 @@ func NewApp(start time.Time) (AppProvider, error) {
 	redisQueue := NewRedisQueue(redisClient)
 	boltDBConsumer := NewBoltDBConsumer(logger, redisQueue, boltBookStorage)
 
-	bookService := NewBookService(logger, config, NewClock(config.IsProduction), redisBookStorage, boltBookStorage, redisQueue)
-	stats := NewStatistics(config.GitTag, config.GitCommit, runtime.Version(), runtime.GOOS+"/"+runtime.GOARCH, IsAppRunningInDocker(), start)
-	apiService := NewAPIHandler(logger, config, stats, NewClock(config.IsProduction), NewIDsHandler(), bookService)
+	bookService := NewBookService(logger, config, clock, redisBookStorage, boltBookStorage, redisQueue)
+	stats := NewStatistics(config.GitTag, config.GitCommit, runtime.Version(), runtime.GOOS+"/"+runtime.GOARCH, IsAppRunningInDocker(), clock.Now())
+	apiService := NewAPIHandler(logger, config, stats, clock, NewIDsHandler(), bookService)
 
 	// Build the map of middlewares stacks.
 	middlewaresPublic, middlewaresOps := apiService.MiddlewaresStacks()
