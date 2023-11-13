@@ -33,6 +33,10 @@ server:
   # timeout message to be sent.
   write_timeout: 17s
   request_timeout: 15s 
+  # long request like GET /v1/books
+  # use http.ResponseController to set
+  long_request_processing_timeout: 55s
+  long_request_write_timeout: 60s
   shutdown_timeout: 90s
   certs_file: "./server.crt"
   key_file: "./server.key"
