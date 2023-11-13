@@ -95,7 +95,8 @@ func NewApp(start time.Time) (AppProvider, error) {
 		Handler:        router,
 		ReadTimeout:    config.Server.ReadTimeout,
 		WriteTimeout:   config.Server.WriteTimeout,
-		MaxHeaderBytes: 1 << 20, // Max headers size : 1MB
+		MaxHeaderBytes: 1 << 20,           // Max headers size : 1MB
+		ConnContext:    SaveConnInContext, // add underlying connection into the request context
 	}
 
 	boltDBConsume := func(ctx context.Context) error {
