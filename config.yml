@@ -9,6 +9,7 @@
 is_production: true
 log_level: "info"
 log_folder: "logs/"
+log_max_size: 250 # 250 MB
 
 # Could be manually set or envs variables
 # or auto detected with build flags.
