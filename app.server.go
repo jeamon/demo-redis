@@ -45,17 +45,8 @@ func NewApp() (AppProvider, error) {
 		return nil, fmt.Errorf("logging: failed to create folder: %v", err)
 	}
 	clock := NewClock(config.IsProduction)
-	logFile, err := os.OpenFile(CreateLogFilePath(config.LogFolder, config.IsProduction, clock.Now()), os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0o644)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create logging file: %s", err)
-	}
-	logFileCloser := func() error {
-		if cerr := logFile.Close(); cerr != nil {
-			return fmt.Errorf("[close log file]: %w", cerr)
-		}
-		return nil
-	}
-	logger, logsFlusher := SetupLogging(config, logFile, NewTickClock(clock))
+	rswriter := NewRSyncWriter(config, clock)
+	logger, logsFlusher := SetupLogging(config, rswriter, NewTickClock(clock))
 
 	// Setup the connection to redis and boltDB servers.
 	redisClient, err := NewRedisClient(config)
@@ -109,7 +100,7 @@ func NewApp() (AppProvider, error) {
 		redisClient: redisClient,
 		cleanups: []func() error{
 			logsFlusher,
-			logFileCloser,
+			rswriter.Close,
 		},
 		queueConsumers: []func(ctx context.Context) error{boltDBConsume},
 	}, nil
