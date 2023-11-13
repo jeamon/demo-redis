@@ -12,7 +12,7 @@ import (
 )
 
 const (
-	ContextRequestLogger ContextKey = "request.logger"
+	LoggerContextKey ContextKey = "request.logger"
 )
 
 // SetupLogging is a helper function that initializes the logging module.
@@ -68,7 +68,7 @@ func SetupLogging(config *Config, logFile *os.File, clock TickerClocker) (*zap.L
 // GetLoggerFromCtx retrieves previously set logger from the context and returns it.
 // If the logger can't be retrieved it will return the initial logger of the App.
 func (api *APIHandler) GetLoggerFromContext(ctx context.Context) *zap.Logger {
-	value := ctx.Value(ContextRequestLogger)
+	value := ctx.Value(LoggerContextKey)
 	if value != nil {
 		return value.(*zap.Logger)
 	}

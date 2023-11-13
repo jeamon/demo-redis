@@ -123,7 +123,7 @@ func TestMaintenanceModeMiddleware(t *testing.T) {
 		ts := NewMockClocker().Now()
 		api.mode.started = ts
 		api.mode.reason = "ongoing maintenance."
-		req = req.WithContext(context.WithValue(req.Context(), ContextRequestID, "abc"))
+		req = req.WithContext(context.WithValue(req.Context(), RequestIDContextKey, "abc"))
 		wrapped := api.MaintenanceModeMiddleware(handler)
 		wrapped(w, req, nil)
 		// target handler will not be called but the maintenance handler must kick-in.
@@ -147,7 +147,7 @@ func TestRequestIDMiddleware(t *testing.T) {
 	var id string
 	handler := func(w http.ResponseWriter, req *http.Request, ps httprouter.Params) {
 		called = true
-		id = GetValueFromContext(req.Context(), ContextRequestID)
+		id = GetValueFromContext(req.Context(), RequestIDContextKey)
 	}
 	wrapped := api.RequestIDMiddleware(handler)
 	wrapped(w, req, nil)
@@ -166,7 +166,7 @@ func TestAddLoggerMiddleware(t *testing.T) {
 	var value interface{}
 	handler := func(w http.ResponseWriter, req *http.Request, ps httprouter.Params) {
 		called = true
-		value = req.Context().Value(ContextRequestLogger)
+		value = req.Context().Value(LoggerContextKey)
 	}
 	wrapped := api.AddLoggerMiddleware(handler)
 	wrapped(w, req, nil)

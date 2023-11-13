@@ -17,7 +17,7 @@ func (api *APIHandler) Index(w http.ResponseWriter, r *http.Request, _ httproute
 
 // Status provides basics details about the application to the public users.
 func (api *APIHandler) Status(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-	requestID := GetValueFromContext(r.Context(), ContextRequestID)
+	requestID := GetValueFromContext(r.Context(), RequestIDContextKey)
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	if err := json.NewEncoder(w).Encode(
 		map[string]interface{}{
@@ -32,7 +32,7 @@ func (api *APIHandler) Status(w http.ResponseWriter, r *http.Request, _ httprout
 
 func (api *APIHandler) CreateBook(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	book := Book{}
-	requestID := GetValueFromContext(r.Context(), ContextRequestID)
+	requestID := GetValueFromContext(r.Context(), RequestIDContextKey)
 	err := DecodeCreateOrUpdateBookRequestBody(r, &book)
 	if err != nil {
 		api.logger.Error("failed to create book", zap.String("request.id", requestID), zap.Error(err))
@@ -74,7 +74,7 @@ func (api *APIHandler) CreateBook(w http.ResponseWriter, r *http.Request, _ http
 
 //nolint:bodyclose
 func (api *APIHandler) GetAllBooks(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-	requestID := GetValueFromContext(r.Context(), ContextRequestID)
+	requestID := GetValueFromContext(r.Context(), RequestIDContextKey)
 	// this block could be moved into the TimeoutMiddleware and remove SetWriteDeadline and
 	// ReadWriteDeadline methods from *CustomResponseWriter object because that middleware
 	// is called before the stats middleware which wraps the native ResponseWriter.
@@ -101,7 +101,7 @@ func (api *APIHandler) GetAllBooks(w http.ResponseWriter, r *http.Request, _ htt
 }
 
 func (api *APIHandler) GetOneBook(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	requestID := GetValueFromContext(r.Context(), ContextRequestID)
+	requestID := GetValueFromContext(r.Context(), RequestIDContextKey)
 	id := ps.ByName("id")
 	if ok := api.idsHandler.IsValid(id, BookIDPrefix); !ok {
 		api.logger.Error("book id provided is not valid", zap.String("book.id", id), zap.String("request.id", requestID))
@@ -136,7 +136,7 @@ func (api *APIHandler) GetOneBook(w http.ResponseWriter, r *http.Request, ps htt
 }
 
 func (api *APIHandler) DeleteOneBook(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	requestID := GetValueFromContext(r.Context(), ContextRequestID)
+	requestID := GetValueFromContext(r.Context(), RequestIDContextKey)
 	id := ps.ByName("id")
 	if ok := api.idsHandler.IsValid(id, BookIDPrefix); !ok {
 		api.logger.Error("book id provided is not valid", zap.String("book.id", id), zap.String("request.id", requestID))
@@ -190,7 +190,7 @@ func (api *APIHandler) DeleteOneBook(w http.ResponseWriter, r *http.Request, ps 
 
 func (api *APIHandler) UpdateBook(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	var book Book
-	requestID := GetValueFromContext(r.Context(), ContextRequestID)
+	requestID := GetValueFromContext(r.Context(), RequestIDContextKey)
 	err := DecodeCreateOrUpdateBookRequestBody(r, &book)
 	if err != nil {
 		api.logger.Error("failed to update book", zap.String("request.id", requestID), zap.Error(err))

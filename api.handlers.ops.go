@@ -67,7 +67,7 @@ func GetMemStats(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 
 // RunGC forces the run of the garbage collector asynchronously.
 func (api *APIHandler) RunGC(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-	requestID := GetValueFromContext(r.Context(), ContextRequestID)
+	requestID := GetValueFromContext(r.Context(), RequestIDContextKey)
 	go runtime.GC()
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	if err := json.NewEncoder(w).Encode(
@@ -82,7 +82,7 @@ func (api *APIHandler) RunGC(w http.ResponseWriter, r *http.Request, _ httproute
 // FreeOSMemory forces the garbage collector to and tries to returns the memory
 // back to the operating system in an asynchronous fashion.
 func (api *APIHandler) FreeOSMemory(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-	requestID := GetValueFromContext(r.Context(), ContextRequestID)
+	requestID := GetValueFromContext(r.Context(), RequestIDContextKey)
 	go debug.FreeOSMemory()
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	if err := json.NewEncoder(w).Encode(
@@ -98,7 +98,7 @@ func (api *APIHandler) FreeOSMemory(w http.ResponseWriter, r *http.Request, _ ht
 // The stats returns by this handler do not contain the ops request which triggered that.
 // That is why we remove 1 from the called field value in order to match the status stats.
 func (api *APIHandler) GetStatistics(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-	requestID := GetValueFromContext(r.Context(), ContextRequestID)
+	requestID := GetValueFromContext(r.Context(), RequestIDContextKey)
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	api.stats.mu.RLock()
 	maintenanceModeStartedTime := api.mode.started.String()
@@ -131,7 +131,7 @@ func (api *APIHandler) GetStatistics(w http.ResponseWriter, r *http.Request, _ h
 
 // GetConfigs serves current in-use configurations/settings.
 func (api *APIHandler) GetConfigs(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-	requestID := GetValueFromContext(r.Context(), ContextRequestID)
+	requestID := GetValueFromContext(r.Context(), RequestIDContextKey)
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	if err := json.NewEncoder(w).Encode(
 		map[string]interface{}{
@@ -147,7 +147,7 @@ func (api *APIHandler) GetConfigs(w http.ResponseWriter, r *http.Request, _ http
 // Enable the maintenance mode : /ops/maintenance?status=enable&msg=message-to-be-displayed-to-users
 // Disable the maintenance mode: /ops/maintenance?status=disable
 func (api *APIHandler) Maintenance(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	requestID := GetValueFromContext(r.Context(), ContextRequestID)
+	requestID := GetValueFromContext(r.Context(), RequestIDContextKey)
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	var response map[string]interface{}
 	var logger *zap.Logger
@@ -201,7 +201,7 @@ func (api *APIHandler) Maintenance(w http.ResponseWriter, r *http.Request, ps ht
 
 // ClearBooksCache deletes all books entries from the primary storage (cache).
 func (api *APIHandler) ClearBooksCache(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-	requestID := GetValueFromContext(r.Context(), ContextRequestID)
+	requestID := GetValueFromContext(r.Context(), RequestIDContextKey)
 	go api.bookService.DeleteAll(r.Context(), requestID)
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	if err := json.NewEncoder(w).Encode(

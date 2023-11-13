@@ -18,11 +18,11 @@ type (
 )
 
 const (
-	BookIDPrefix         string     = "b"
-	RequestIDPrefix      string     = "r"
-	ContextRequestID     ContextKey = "request.id"
-	ContextRequestNumber ContextKey = "request.number"
-	ConnContextKey       ContextKey = "http-conn"
+	BookIDPrefix            string     = "b"
+	RequestIDPrefix         string     = "r"
+	RequestIDContextKey     ContextKey = "request.id"
+	RequestNumberContextKey ContextKey = "request.number"
+	ConnContextKey          ContextKey = "http-conn"
 )
 
 func (m missingFieldError) Error() string {
@@ -41,7 +41,7 @@ func GetValueFromContext(ctx context.Context, contextKey ContextKey) string {
 // GetRequestNumberFromContext returns the request number set in
 // the context. if not previously set then it returns 0.
 func GetRequestNumberFromContext(ctx context.Context) uint64 {
-	if val := ctx.Value(ContextRequestNumber); val != nil {
+	if val := ctx.Value(RequestNumberContextKey); val != nil {
 		return val.(uint64)
 	}
 	return 0

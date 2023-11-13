@@ -55,7 +55,7 @@ func (api *APIHandler) StatsMiddleware(next httprouter.Handle) httprouter.Handle
 // AddLoggerMiddleware creates a logger with pre-populated fields for each request.
 func (api *APIHandler) AddLoggerMiddleware(next httprouter.Handle) httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-		requestID := GetValueFromContext(r.Context(), ContextRequestID)
+		requestID := GetValueFromContext(r.Context(), RequestIDContextKey)
 		requestNum := GetRequestNumberFromContext(r.Context())
 		logger := api.logger.With(
 			zap.String("request.id", requestID),
@@ -67,7 +67,7 @@ func (api *APIHandler) AddLoggerMiddleware(next httprouter.Handle) httprouter.Ha
 			zap.String("request.referer", r.Referer()),
 		)
 
-		ctx := context.WithValue(r.Context(), ContextRequestLogger, logger)
+		ctx := context.WithValue(r.Context(), LoggerContextKey, logger)
 		r = r.WithContext(ctx)
 		next(w, r, ps)
 	}
@@ -94,7 +94,7 @@ func (api *APIHandler) MaintenanceModeMiddleware(next httprouter.Handle) httprou
 // new value to the request context to be used during logging as `request.num` field.
 func (api *APIHandler) RequestsCounterMiddleware(next httprouter.Handle) httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-		ctx := context.WithValue(r.Context(), ContextRequestNumber, atomic.AddUint64(&api.stats.called, 1))
+		ctx := context.WithValue(r.Context(), RequestNumberContextKey, atomic.AddUint64(&api.stats.called, 1))
 		r = r.WithContext(ctx)
 		next(w, r, ps)
 	}
@@ -104,7 +104,7 @@ func (api *APIHandler) RequestsCounterMiddleware(next httprouter.Handle) httprou
 func (api *APIHandler) RequestIDMiddleware(next httprouter.Handle) httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		requestID := api.idsHandler.Generate(RequestIDPrefix)
-		ctx := context.WithValue(r.Context(), ContextRequestID, requestID)
+		ctx := context.WithValue(r.Context(), RequestIDContextKey, requestID)
 		r = r.WithContext(ctx)
 		next(w, r, ps)
 	}
@@ -126,7 +126,7 @@ func (api *APIHandler) PanicRecoveryMiddleware(next httprouter.Handle) httproute
 	return func(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		recovery := func() {
 			if err := recover(); err != nil {
-				requestID := GetValueFromContext(r.Context(), ContextRequestID)
+				requestID := GetValueFromContext(r.Context(), RequestIDContextKey)
 				api.logger.Error("panic occurred", zap.String("request.id", requestID), zap.Any("error", err))
 				errResp := NewAPIError(requestID, http.StatusInternalServerError, "failed to process the request.", struct{}{})
 				if err := WriteErrorResponse(r.Context(), w, errResp); err != nil {
@@ -144,7 +144,7 @@ func (api *APIHandler) PanicRecoveryMiddleware(next httprouter.Handle) httproute
 // header to notify the final handler to not perform any action towards the client.
 func (api *APIHandler) TimeoutMiddleware(next httprouter.Handle) httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-		requestID := GetValueFromContext(r.Context(), ContextRequestID)
+		requestID := GetValueFromContext(r.Context(), RequestIDContextKey)
 		logger := api.GetLoggerFromContext(r.Context())
 		timeout := api.GetTimeout(r)
 		ctx, cancel := context.WithTimeout(r.Context(), timeout)
