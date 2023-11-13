@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 
 	"github.com/julienschmidt/httprouter"
 	"github.com/stretchr/testify/assert"
@@ -96,7 +97,8 @@ func TestSetupBookRoutes(t *testing.T) {
 	}
 
 	bs := NewBookService(zap.NewNop(), nil, NewMockClocker(), mockRepo, mockRepo, mockQueue)
-	api := NewAPIHandler(zap.NewNop(), nil, &Statistics{started: NewMockClocker().Now()}, NewMockClocker(), NewMockUIDHandler("", true), bs)
+	api := NewAPIHandler(zap.NewNop(), &Config{}, &Statistics{started: NewMockClocker().Now()}, NewMockClocker(), NewMockUIDHandler("", true), bs)
+	api.config.Server.LongRequestWriteTimeout = time.Second
 	router := httprouter.New()
 	m := &MiddlewareMap{public: (&Middlewares{}).Chain, ops: (&Middlewares{}).Chain}
 	api.SetupBookRoutes(router, m)
