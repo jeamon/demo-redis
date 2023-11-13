@@ -76,7 +76,7 @@ func (bs *BookService) Delete(ctx context.Context, id string) error {
 }
 
 func (bs *BookService) Update(ctx context.Context, id string, book Book) (Book, error) {
-	book.UpdatedAt = bs.clock.Now().UTC().String()
+	book.UpdatedAt = bs.clock.Now().String()
 	b, err := bs.pstorage.Update(ctx, id, book)
 	if err != nil {
 		return b, err

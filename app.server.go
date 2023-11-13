@@ -55,7 +55,7 @@ func NewApp() (AppProvider, error) {
 		}
 		return nil
 	}
-	logger, logsFlusher := SetupLogging(config, logFile, NewTickClock(config.IsProduction))
+	logger, logsFlusher := SetupLogging(config, logFile, NewTickClock(clock))
 
 	// Setup the connection to redis and boltDB servers.
 	redisClient, err := NewRedisClient(config)

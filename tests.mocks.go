@@ -48,12 +48,13 @@ func (m *MockBookStorage) DeleteAll(ctx context.Context) error {
 
 // MockClocker implements a fake Clocker.
 type MockClocker struct {
-	MockNow time.Time
+	MockNow  time.Time
+	MockZero time.Time
 }
 
 // NewMockClocker returns a mocked instance with fixed time.
 func NewMockClocker() *MockClocker {
-	return &MockClocker{time.Date(2023, 0o7, 0o2, 0o0, 0o0, 0o0, 0o00000000, time.UTC)}
+	return &MockClocker{time.Date(2023, 0o7, 0o2, 0o0, 0o0, 0o0, 0o00000000, time.UTC), time.Time{}}
 }
 
 // Now returns an already defined time to be used as mock. This
@@ -61,6 +62,11 @@ func NewMockClocker() *MockClocker {
 // equals to `2023-07-02 00:00:00 +0000 UTC` in String format.
 func (mck *MockClocker) Now() time.Time {
 	return mck.MockNow
+}
+
+// Zero returns zero time.Time to be used as mock.
+func (mck *MockClocker) Zero() time.Time {
+	return mck.MockZero
 }
 
 // MockUIDHandler implements a fake UIDHandler.

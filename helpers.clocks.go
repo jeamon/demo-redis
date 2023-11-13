@@ -16,8 +16,13 @@ type TickerClocker interface {
 }
 
 // Clocker is an interface for getting current real time.
+// Refactoring: remove Zero from this interface. The create
+// ZeroClocker which embeds Clock and Zero() method. Then
+// TickerClocker can use Clocker without being forced to
+// implement Zero() method.
 type Clocker interface {
 	Now() time.Time
+	Zero() time.Time
 }
 
 // Clock implements the Clocker interface.
@@ -39,19 +44,25 @@ func (ck *Clock) Now() time.Time {
 	return time.Now().In(ck.tz)
 }
 
-type TickClock struct {
-	tz *time.Location
+// Zero returns zero time.
+func (ck *Clock) Zero() time.Time {
+	return time.Time{}
 }
 
-func NewTickClock(isProd bool) *TickClock {
-	if isProd {
-		return &TickClock{time.UTC}
-	}
-	return &TickClock{time.Local}
+type TickClock struct {
+	clock Clocker
+}
+
+func NewTickClock(ck Clocker) *TickClock {
+	return &TickClock{ck}
 }
 
 func (tc *TickClock) Now() time.Time {
-	return time.Now().In(tc.tz)
+	return tc.clock.Now()
+}
+
+func (tc *TickClock) Zero() time.Time {
+	return tc.clock.Zero()
 }
 
 func (tc *TickClock) NewTicker(d time.Duration) *time.Ticker {

@@ -102,7 +102,7 @@ func (api *APIHandler) GetStatistics(w http.ResponseWriter, r *http.Request, _ h
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	api.stats.mu.RLock()
 	maintenanceModeStartedTime := api.mode.started.String()
-	if api.mode.started == (time.Time{}.UTC()) {
+	if api.mode.started.IsZero() {
 		maintenanceModeStartedTime = ""
 	}
 	err := json.NewEncoder(w).Encode(
@@ -161,7 +161,7 @@ func (api *APIHandler) Maintenance(w http.ResponseWriter, r *http.Request, ps ht
 	switch mstatus {
 	case "enable":
 		api.mode.reason = q.Get("msg")
-		api.mode.started = api.clock.Now().UTC()
+		api.mode.started = api.clock.Now()
 		api.mode.enabled.Store(true)
 		response = map[string]interface{}{
 			"requestid":           requestID,
@@ -173,7 +173,7 @@ func (api *APIHandler) Maintenance(w http.ResponseWriter, r *http.Request, ps ht
 
 	case "disable":
 		api.mode.enabled.Store(false)
-		api.mode.started = time.Time{}.UTC()
+		api.mode.started = api.clock.Zero()
 		api.mode.reason = ""
 		response = map[string]interface{}{
 			"requestid": requestID,
