@@ -5,22 +5,28 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"net"
 	"net/http"
+	"time"
 )
 
 // CustomResponseWriter is a wrapper for http.ResponseWriter. It is
 // used to record response details like status code and body size.
+// The underlying network connection is tracked for dynamic read/write
+// deadline setup.
 type CustomResponseWriter struct {
 	http.ResponseWriter
+	conn  net.Conn
 	code  int
 	bytes int
 	wrote bool
 }
 
 // NewCustomResponseWriter provides CustomResponseWriter with 200 as status code.
-func NewCustomResponseWriter(rw http.ResponseWriter) *CustomResponseWriter {
+func NewCustomResponseWriter(rw http.ResponseWriter, c net.Conn) *CustomResponseWriter {
 	return &CustomResponseWriter{
 		ResponseWriter: rw,
+		conn:           c,
 		code:           200,
 	}
 }
@@ -76,6 +82,18 @@ func (cw *CustomResponseWriter) Bytes() int {
 // the http.ResponseController during its operation.
 func (cw *CustomResponseWriter) Unwrap() http.ResponseWriter {
 	return cw.ResponseWriter
+}
+
+// SetWriteDeadline rewrites the underlying connection write deadline.
+// This is called by http.ResponseController SetWriteDeadline method.
+func (cw *CustomResponseWriter) SetWriteDeadline(t time.Time) error {
+	return cw.conn.SetWriteDeadline(t)
+}
+
+// SetReadDeadline rewrites the underlying connection read deadline.
+// This is called by http.ResponseController SetReadDeadline method.
+func (cw *CustomResponseWriter) SetReadDeadline(t time.Time) error {
+	return cw.conn.SetReadDeadline(t)
 }
 
 // APIError is the data model sent when an error occurred during request processing.
