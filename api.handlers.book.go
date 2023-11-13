@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/julienschmidt/httprouter"
 	"go.uber.org/zap"
@@ -71,8 +72,17 @@ func (api *APIHandler) CreateBook(w http.ResponseWriter, r *http.Request, _ http
 	}
 }
 
+//nolint:bodyclose
 func (api *APIHandler) GetAllBooks(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	requestID := GetValueFromContext(r.Context(), ContextRequestID)
+	// this block could be moved into the TimeoutMiddleware and remove SetWriteDeadline and
+	// ReadWriteDeadline methods from *CustomResponseWriter object because that middleware
+	// is called before the stats middleware which wraps the native ResponseWriter.
+	rc := http.NewResponseController(w)
+	if err := rc.SetWriteDeadline(time.Now().Add(api.config.Server.LongRequestWriteTimeout)); err != nil {
+		api.logger.Error("http: failed to update the write deadline", zap.String("request.id", requestID), zap.Error(err))
+	}
+
 	books, err := api.bookService.GetAll(r.Context())
 	if err != nil {
 		api.logger.Error("failed to get all books", zap.String("request.id", requestID), zap.Error(err))
