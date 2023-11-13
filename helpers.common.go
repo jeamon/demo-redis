@@ -22,6 +22,7 @@ const (
 	RequestIDPrefix      string     = "r"
 	ContextRequestID     ContextKey = "request.id"
 	ContextRequestNumber ContextKey = "request.number"
+	ConnContextKey       ContextKey = "http-conn"
 )
 
 func (m missingFieldError) Error() string {
@@ -131,4 +132,16 @@ func IsAppRunningInDocker() bool {
 		return true
 	}
 	return false
+}
+
+// SaveConnInContext is the hook used by the server under ConnContext.
+// It sets the underlying connection into the request context for later
+// use by ReadDeadline or WriteDeadline method on *CustomResponseWriter.
+func SaveConnInContext(ctx context.Context, c net.Conn) context.Context {
+	return context.WithValue(ctx, ConnContextKey, c)
+}
+
+// GetConnFromContext returns the connection saved into the context.
+func GetConnFromContext(ctx context.Context) net.Conn {
+	return ctx.Value(ConnContextKey).(net.Conn)
 }
