@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"net/http"
 	"sync/atomic"
+	"time"
 
 	"github.com/julienschmidt/httprouter"
 	"go.uber.org/zap"
@@ -31,8 +32,9 @@ type MiddlewareMap struct {
 func (api *APIHandler) StatsMiddleware(next httprouter.Handle) httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		logger := api.GetLoggerFromContext(r.Context())
+		conn := GetConnFromContext(r.Context())
+		nw := NewCustomResponseWriter(w, conn)
 		start := api.clock.Now()
-		nw := NewCustomResponseWriter(w)
 		next(nw, r, ps)
 		logger.Info(
 			"stats",
@@ -144,8 +146,8 @@ func (api *APIHandler) TimeoutMiddleware(next httprouter.Handle) httprouter.Hand
 	return func(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		requestID := GetValueFromContext(r.Context(), ContextRequestID)
 		logger := api.GetLoggerFromContext(r.Context())
-		timeout := api.config.Server.RequestTimeout
-		ctx, cancel := context.WithTimeout(r.Context(), api.config.Server.RequestTimeout)
+		timeout := api.GetTimeout(r)
+		ctx, cancel := context.WithTimeout(r.Context(), timeout)
 		defer cancel()
 		r = r.WithContext(ctx)
 		done := make(chan struct{})
@@ -173,6 +175,17 @@ func (api *APIHandler) TimeoutMiddleware(next httprouter.Handle) httprouter.Hand
 				}
 			}
 		}
+	}
+}
+
+// GetTimeout returns the processing timeout to use to update
+// a given request context deadline based on path and method.
+func (api *APIHandler) GetTimeout(r *http.Request) time.Duration {
+	switch {
+	case r.Method == "GET" && r.URL.Path == "/v1/books":
+		return api.config.Server.LongRequestProcessingTimeout
+	default:
+		return api.config.Server.RequestTimeout
 	}
 }
 
