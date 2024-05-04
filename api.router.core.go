@@ -14,6 +14,6 @@ func (api *APIHandler) SetupRoutes(router *httprouter.Router, m *MiddlewareMap) 
 	if api.config.OpsEndpointsEnable {
 		api.SetupOpsRoutes(router, m)
 	}
-	router.GET("/swagger/*", m.public(api.OpsHandlerWrapper(httpswagger.WrapHandler)))
+	router.GET("/swagger/", m.public(api.OpsHandlerWrapper(httpswagger.WrapHandler)))
 	return router
 }
