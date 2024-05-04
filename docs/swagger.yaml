@@ -1,0 +1,41 @@
+basePath: /v1
+definitions:
+  main.StatusResponse:
+    properties:
+      message:
+        type: string
+      requestid:
+        type: string
+      status:
+        type: string
+    type: object
+externalDocs:
+  description: OpenAPI
+  url: https://swagger.io/resources/open-api/
+host: localhost:8080
+info:
+  contact:
+    name: Jerome Amon
+    url: https://learn.cloudmentor-scale.com/contact
+  description: This provides a CRUD service on Book.
+  license:
+    name: MIT
+    url: https://github.com/jeamon/demo-redis/blob/main/LICENSE
+  title: Book Store API
+  version: "1.0"
+paths:
+  /status:
+    get:
+      description: Get how long the application has been online.
+      operationId: get-status
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/main.StatusResponse'
+      summary: Get the app status
+      tags:
+      - Books
+swagger: "2.0"

@@ -7,6 +7,21 @@ import (
 	"go.uber.org/zap"
 )
 
+// @title           Book Store API
+// @version         1.0
+// @description     This provides a CRUD service on Book.
+
+// @contact.name   Jerome Amon
+// @contact.url    https://learn.cloudmentor-scale.com/contact
+
+// @license.name  MIT
+// @license.url   https://github.com/jeamon/demo-redis/blob/main/LICENSE
+
+// @host      localhost:8080
+// @BasePath  /v1
+
+// @externalDocs.description  OpenAPI
+// @externalDocs.url          https://swagger.io/resources/open-api/
 type BookServiceProvider interface {
 	Add(ctx context.Context, id string, book Book) error
 	GetOne(ctx context.Context, id string) (Book, error)

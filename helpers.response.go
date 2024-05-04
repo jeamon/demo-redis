@@ -168,3 +168,10 @@ func WriteResponse(ctx context.Context, w http.ResponseWriter, resp *APIResponse
 	w.WriteHeader(resp.Status)
 	return json.NewEncoder(w).Encode(resp)
 }
+
+// StatusResponse is the data model sent when status endpoint is called.
+type StatusResponse struct {
+	RequestID string `json:"requestid"`
+	Status    string `json:"status"`
+	Message   string `json:"message"`
+}

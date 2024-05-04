@@ -16,14 +16,21 @@ func (api *APIHandler) Index(w http.ResponseWriter, r *http.Request, _ httproute
 }
 
 // Status provides basics details about the application to the public users.
+// @Summary		Get the app status
+// @Description	Get how long the application has been online.
+// @ID			get-status
+// @Tags		Books
+// @Produce		json
+// @Success		200		{object}		StatusResponse
+// @Router		/status	[GET]
 func (api *APIHandler) Status(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	requestID := GetValueFromContext(r.Context(), RequestIDContextKey)
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	if err := json.NewEncoder(w).Encode(
-		map[string]interface{}{
-			"requestid": requestID,
-			"status":    fmt.Sprintf("up & running since %.0f mins", api.clock.Now().Sub(api.stats.started).Minutes()),
-			"message":   "Hello. Books store api is available. Enjoy :)",
+		StatusResponse{
+			RequestID: requestID,
+			Status:    fmt.Sprintf("up & running since %.0f mins", api.clock.Now().Sub(api.stats.started).Minutes()),
+			Message:   "Hello. Books store api is available. Enjoy :)",
 		},
 	); err != nil {
 		api.logger.Error("failed to send status response", zap.String("request.id", requestID), zap.Error(err))
