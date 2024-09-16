@@ -37,6 +37,19 @@ func (api *APIHandler) Status(w http.ResponseWriter, r *http.Request, _ httprout
 	}
 }
 
+// CreateBook provides basics details about the application to the public users.
+// @Summary		Creates new book.
+// @Description	Creates a book submitted and returns its ID.
+// @ID			create-book
+// @Tags		Books
+// @Security		Bearer
+// @Consume		json
+// @Produce		json
+// @Param		Book		body		Book	true	"Book to create"
+// @Success		201		{object}		StatusResponse
+// @Failure		400		{object}		APIError
+// @Failure		500		{object}		APIError
+// @Router		/api/v1/books	[POST]
 func (api *APIHandler) CreateBook(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	book := Book{}
 	requestID := GetValueFromContext(r.Context(), RequestIDContextKey)

@@ -123,8 +123,11 @@ docker.clean: ## Stop & Remove all app containers (without the volume) and delet
 	@docker rm -f $(docker ps -aq --filter "name=app.demo.redis")
 	@docker rmi -f $(docker images -aq --filter="reference=app.demo.redis:*")
 
-.PHONY: swagger.generate
-swagger.generate: ## Install swaggo/swag and generate openapi specs.
+.PHONY: swagger.install
+swagger.install: ## Install swaggo/swag for openapi specs.
 ## use v1.8.12 due to https://github.com/swaggo/swag/issues/1568
 	go install github.com/swaggo/swag/cmd/swag@v1.8.12
+
+.PHONY: swagger.generate
+swagger.generate: ## Generate openapi specs.
 	swag init -g api.services.go

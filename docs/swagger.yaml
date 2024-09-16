@@ -1,5 +1,38 @@
 basePath: /v1
 definitions:
+  main.APIError:
+    properties:
+      data: {}
+      message:
+        type: string
+      requestid:
+        type: string
+      status:
+        type: integer
+    type: object
+  main.Book:
+    properties:
+      author:
+        type: string
+      createdAt:
+        type: string
+      description:
+        type: string
+      id:
+        type: string
+      price:
+        type: string
+      title:
+        type: string
+      updatedAt:
+        type: string
+    required:
+    - author
+    - description
+    - id
+    - price
+    - title
+    type: object
   main.StatusResponse:
     properties:
       message:
@@ -24,6 +57,37 @@ info:
   title: Book Store API
   version: "1.0"
 paths:
+  /api/v1/books:
+    post:
+      description: Creates a book submitted and returns its ID.
+      operationId: create-book
+      parameters:
+      - description: Book to create
+        in: body
+        name: Book
+        required: true
+        schema:
+          $ref: '#/definitions/main.Book'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/main.StatusResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/main.APIError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/main.APIError'
+      security:
+      - Bearer: []
+      summary: Creates new book.
+      tags:
+      - Books
   /status:
     get:
       description: Get how long the application has been online.
